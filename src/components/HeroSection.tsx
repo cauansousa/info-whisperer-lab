@@ -1,6 +1,4 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import ParticleNetwork from "@/components/ParticleNetwork";
 
 const HeroSection = () => {
@@ -28,17 +26,13 @@ const HeroSection = () => {
 
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
-      {/* Particle network background */}
       <ParticleNetwork />
-
-      {/* Subtle radial gradient overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_20%,hsl(var(--background))_80%)]" />
 
       <motion.div
         style={{ opacity, scale, y }}
         className="container relative z-10 mx-auto max-w-6xl px-6"
       >
-        {/* Main title - massive, editorial */}
         <div className="text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -51,7 +45,6 @@ const HeroSection = () => {
             </span>
           </motion.div>
 
-          {/* Animated letters - line 1 */}
           <h1 className="font-display text-6xl font-bold leading-[0.95] tracking-tight md:text-8xl lg:text-[9rem]">
             <span className="block overflow-hidden" style={{ perspective: "600px" }}>
               {words1.map((char, i) => (
@@ -68,8 +61,6 @@ const HeroSection = () => {
                 </motion.span>
               ))}
             </span>
-
-            {/* Line 2 with gradient */}
             <span className="mt-2 block overflow-hidden" style={{ perspective: "600px" }}>
               {words2.map((char, i) => (
                 <motion.span
@@ -87,7 +78,6 @@ const HeroSection = () => {
             </span>
           </h1>
 
-          {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -99,26 +89,23 @@ const HeroSection = () => {
             <span className="text-foreground/60">Controle total. Acesso granular. Zero fricção.</span>
           </motion.p>
 
-          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.8 }}
-            className="mt-12 flex items-center justify-center gap-6"
+            className="mt-12 flex items-center justify-center"
           >
-            <Button variant="hero" size="xl">
-              Começar
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <button className="group relative text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Saiba mais
+            <a
+              href="#solicitar-acesso"
+              className="group relative text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Solicitar acesso antecipado ↓
               <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-foreground transition-all duration-300 group-hover:w-full" />
-            </button>
+            </a>
           </motion.div>
         </div>
       </motion.div>
 
-      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
