@@ -10,7 +10,7 @@ const Navbar = () => {
   return (
     <motion.nav
       style={{
-        backgroundColor: `hsl(220 20% 4% / ${bgOpacity})`,
+        backgroundColor: `hsl(0 0% 3% / ${bgOpacity})`,
       }}
       className="fixed top-0 z-50 w-full backdrop-blur-xl"
     >
