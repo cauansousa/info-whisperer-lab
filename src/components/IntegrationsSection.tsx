@@ -73,7 +73,7 @@ const IntegrationCard = ({
         <img
           src={integration.logo}
           alt={`${integration.name} logo`}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-contain brightness-0 invert transition-all duration-300 group-hover:opacity-80"
           loading="lazy"
         />
       </div>
