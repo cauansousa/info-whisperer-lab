@@ -69,11 +69,11 @@ const IntegrationCard = ({
       transition={{ duration: 0.5, delay: index * 0.07 }}
       className="group flex flex-col items-center gap-4 rounded-xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/60"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-border/30 bg-secondary/30 p-3 transition-all duration-300 group-hover:border-primary/20 group-hover:bg-secondary/50">
+      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl">
         <img
           src={integration.logo}
           alt={`${integration.name} logo`}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-cover rounded-xl"
           loading="lazy"
         />
       </div>
