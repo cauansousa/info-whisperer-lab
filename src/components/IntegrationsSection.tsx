@@ -2,14 +2,14 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 const integrations = [
-  { name: "GitHub", logo: "/images/github-logo.png", category: "Versionamento" },
-  { name: "Databricks", logo: "/images/databricks-logo.png", category: "Engenharia de Dados" },
-  { name: "Snowflake", logo: "/images/snowflake-logo.png", category: "Data Warehouse" },
-  { name: "BigQuery", logo: "/images/bigquery-logo.png", category: "Data Warehouse" },
-  { name: "PostgreSQL", logo: "/images/postgresql-logo.png", category: "Banco de Dados" },
-  { name: "MongoDB", logo: "/images/mongodb-logo.png", category: "Banco de Dados" },
-  { name: "MySQL", logo: "/images/mysql-logo.png", category: "Banco de Dados" },
-  { name: "Amazon Redshift", logo: "/images/redshift-logo.png", category: "Data Warehouse" },
+  { name: "GitHub", logo: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png", category: "Versionamento" },
+  { name: "Databricks", logo: "https://upload.wikimedia.org/wikipedia/commons/6/63/Databricks_Logo.png", category: "Engenharia de Dados" },
+  { name: "Snowflake", logo: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Snowflake_Logo.svg", category: "Data Warehouse" },
+  { name: "BigQuery", logo: "https://cdn.worldvectorlogo.com/logos/google-bigquery-logo-1.svg", category: "Data Warehouse" },
+  { name: "PostgreSQL", logo: "https://www.postgresql.org/media/img/about/press/elephant.png", category: "Banco de Dados" },
+  { name: "MongoDB", logo: "https://upload.wikimedia.org/wikipedia/commons/9/93/MongoDB_Logo.svg", category: "Banco de Dados" },
+  { name: "MySQL", logo: "https://www.mysql.com/common/logos/logo-mysql-170x115.png", category: "Banco de Dados" },
+  { name: "Amazon Redshift", logo: "https://upload.wikimedia.org/wikipedia/commons/7/73/Amazon-Redshift-Logo.svg", category: "Data Warehouse" },
 ];
 
 const IntegrationsSection = () => {
@@ -18,7 +18,6 @@ const IntegrationsSection = () => {
 
   return (
     <section id="integracoes" className="relative py-32">
-      {/* Subtle top divider */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
       <div className="container mx-auto max-w-6xl px-6">
@@ -69,11 +68,11 @@ const IntegrationCard = ({
       transition={{ duration: 0.5, delay: index * 0.07 }}
       className="group flex flex-col items-center gap-4 rounded-xl border border-border/50 bg-card/40 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/60"
     >
-      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl">
+      <div className="flex h-16 w-32 items-center justify-center rounded-lg bg-white/90 p-3">
         <img
           src={integration.logo}
           alt={`${integration.name} logo`}
-          className="h-full w-full object-cover rounded-xl"
+          className="h-full w-full object-contain"
           loading="lazy"
         />
       </div>
