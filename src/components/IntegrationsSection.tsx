@@ -3,7 +3,7 @@ import { useRef } from "react";
 
 const integrations = [
   { name: "GitHub", logo: "/images/github-logo.svg", category: "Versionamento" },
-  { name: "Databricks", logo: "/images/databricks-logo.png", category: "Engenharia de Dados" },
+  { name: "Databricks", logo: "/images/databricks-logo.svg", category: "Engenharia de Dados" },
   { name: "Snowflake", logo: "/images/snowflake-logo.svg", category: "Data Warehouse" },
   { name: "BigQuery", logo: "/images/bigquery-logo.svg", category: "Data Warehouse" },
   { name: "PostgreSQL", logo: "/images/postgresql-logo.svg", category: "Banco de Dados" },
