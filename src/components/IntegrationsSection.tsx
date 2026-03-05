@@ -4,12 +4,12 @@ import { useRef } from "react";
 const integrations = [
   { name: "GitHub", logo: "/images/github-logo.svg", category: "Versionamento" },
   { name: "Databricks", logo: "/images/databricks-logo.png", category: "Engenharia de Dados" },
-  { name: "Snowflake", logo: "/images/snowflake-logo.png", category: "Data Warehouse" },
-  { name: "BigQuery", logo: "/images/bigquery-logo.png", category: "Data Warehouse" },
+  { name: "Snowflake", logo: "/images/snowflake-logo.svg", category: "Data Warehouse" },
+  { name: "BigQuery", logo: "/images/bigquery-logo.svg", category: "Data Warehouse" },
   { name: "PostgreSQL", logo: "/images/postgresql-logo.svg", category: "Banco de Dados" },
   { name: "MongoDB", logo: "/images/mongodb-logo.svg", category: "Banco de Dados" },
   { name: "MySQL", logo: "/images/mysql-logo.svg", category: "Banco de Dados" },
-  { name: "Amazon Redshift", logo: "/images/redshift-logo.png", category: "Data Warehouse" },
+  { name: "Amazon Redshift", logo: "/images/redshift-logo.svg", category: "Data Warehouse" },
 ];
 
 const IntegrationsSection = () => {
