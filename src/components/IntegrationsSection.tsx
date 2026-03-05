@@ -2,14 +2,14 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
 const integrations = [
-  { name: "GitHub", logo: "/images/github-logo.svg", category: "Versionamento" },
-  { name: "Databricks", logo: "/images/databricks-logo.svg", category: "Engenharia de Dados" },
-  { name: "Snowflake", logo: "/images/snowflake-logo.svg", category: "Data Warehouse" },
-  { name: "BigQuery", logo: "/images/bigquery-logo.svg", category: "Data Warehouse" },
-  { name: "PostgreSQL", logo: "/images/postgresql-logo.svg", category: "Banco de Dados" },
-  { name: "MongoDB", logo: "/images/mongodb-logo.svg", category: "Banco de Dados" },
-  { name: "MySQL", logo: "/images/mysql-logo.svg", category: "Banco de Dados" },
-  { name: "Amazon Redshift", logo: "/images/redshift-logo.svg", category: "Data Warehouse" },
+  { name: "GitHub", logo: "/images/github-logo.png", category: "Versionamento" },
+  { name: "Databricks", logo: "/images/databricks-logo.png", category: "Engenharia de Dados" },
+  { name: "Snowflake", logo: "/images/snowflake-logo.png", category: "Data Warehouse" },
+  { name: "BigQuery", logo: "/images/bigquery-logo.png", category: "Data Warehouse" },
+  { name: "PostgreSQL", logo: "/images/postgresql-logo.png", category: "Banco de Dados" },
+  { name: "MongoDB", logo: "/images/mongodb-logo.png", category: "Banco de Dados" },
+  { name: "MySQL", logo: "/images/mysql-logo.png", category: "Banco de Dados" },
+  { name: "Amazon Redshift", logo: "/images/redshift-logo.png", category: "Data Warehouse" },
 ];
 
 const IntegrationsSection = () => {
@@ -73,7 +73,7 @@ const IntegrationCard = ({
         <img
           src={integration.logo}
           alt={`${integration.name} logo`}
-          className="h-full w-full object-contain brightness-0 invert transition-all duration-300 group-hover:opacity-80"
+          className="h-full w-full object-contain"
           loading="lazy"
         />
       </div>
