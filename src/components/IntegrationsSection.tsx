@@ -96,14 +96,14 @@ const IntegrationsSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="relative rounded-2xl border border-primary/30 bg-primary/5 p-7"
+            className="rounded-2xl border border-primary/30 bg-primary/5 p-7"
           >
-            <div className="absolute -top-3 right-5 rounded-full border border-primary/30 bg-primary/10 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-              Recomendado
-            </div>
             <div className="mb-4 flex items-center gap-3">
               <Server className="h-6 w-6 text-primary" />
               <h3 className="text-base font-semibold text-foreground">IA Privada</h3>
+              <span className="ml-auto rounded-full border border-primary/30 bg-primary/10 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                Recomendado
+              </span>
             </div>
             <p className="mb-5 text-sm text-muted-foreground">
               Processe tudo dentro da sua infraestrutura. Seus dados sensíveis nunca saem da empresa.
