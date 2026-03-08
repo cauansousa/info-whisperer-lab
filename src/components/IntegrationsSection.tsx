@@ -1,16 +1,11 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { ShieldCheck, Server, Cloud } from "lucide-react";
+import { FileSpreadsheet, Database, FileText, ShieldCheck, Server, Cloud } from "lucide-react";
 
 const dataSources = [
-  { name: "GitHub", logo: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" },
-  { name: "Databricks", logo: "https://upload.wikimedia.org/wikipedia/commons/6/63/Databricks_Logo.png" },
-  { name: "Snowflake", logo: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Snowflake_Logo.svg" },
-  { name: "BigQuery", logo: "https://cdn.worldvectorlogo.com/logos/google-bigquery-logo-1.svg" },
-  { name: "PostgreSQL", logo: "https://www.postgresql.org/media/img/about/press/elephant.png" },
-  { name: "MongoDB", logo: "https://upload.wikimedia.org/wikipedia/commons/9/93/MongoDB_Logo.svg" },
-  { name: "MySQL", logo: "https://www.mysql.com/common/logos/logo-mysql-170x115.png" },
-  { name: "Amazon Redshift", logo: "https://upload.wikimedia.org/wikipedia/commons/7/73/Amazon-Redshift-Logo.svg" },
+  { name: "Planilhas & Excel", icon: FileSpreadsheet, description: "Importe direto do Excel, Google Sheets e outros" },
+  { name: "Bancos de Dados", icon: Database, description: "Conecte qualquer banco de dados da sua empresa" },
+  { name: "Documentos", icon: FileText, description: "PDFs, CSVs, relatórios e arquivos internos" },
 ];
 
 const aiModels = [
@@ -41,35 +36,39 @@ const IntegrationsSection = () => {
             Integrações
           </span>
           <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
-            Suas fontes.{" "}
-            <span className="text-gradient">Seu modelo.</span>
+            Conecte os dados que{" "}
+            <span className="text-gradient">você já tem.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-muted-foreground">
-            Conecte seus dados e escolha o modelo de IA — inclusive modelos locais para máxima segurança.
+            Planilhas, bancos de dados ou documentos — tudo vira inteligência em minutos.
           </p>
         </motion.div>
 
-        {/* Data sources strip */}
-        <div className="mb-16 flex flex-wrap items-center justify-center gap-5 md:gap-8">
+        {/* Data sources — simple cards */}
+        <div className="mb-16 grid gap-4 md:grid-cols-3">
           {dataSources.map((item, i) => (
             <motion.div
               key={item.name}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.04, duration: 0.4 }}
-              className="group flex flex-col items-center gap-2"
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="group flex flex-col items-center gap-3 rounded-2xl border border-border/30 bg-card/30 p-8 text-center transition-all duration-300 hover:bg-card/50"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-border/40 bg-white/90 p-2.5 transition-transform duration-300 group-hover:scale-110">
-                <img src={item.logo} alt={item.name} className="h-full w-full object-contain" loading="lazy" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/20 bg-primary/5">
+                <item.icon className="h-7 w-7 text-primary" />
               </div>
-              <span className="text-[11px] text-muted-foreground">{item.name}</span>
+              <h3 className="text-base font-semibold text-foreground">{item.name}</h3>
+              <p className="text-sm text-muted-foreground">{item.description}</p>
             </motion.div>
           ))}
         </div>
 
-        {/* AI Models — clean list with security highlight */}
+        {/* AI Models */}
         <div className="mx-auto grid max-w-3xl gap-2">
+          <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
+            Escolha o modelo de IA ideal para sua operação
+          </p>
           {aiModels.map((model, i) => (
             <motion.div
               key={model.name}
