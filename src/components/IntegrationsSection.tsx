@@ -1,6 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { FileSpreadsheet, Database, FileText, ShieldCheck, Server, Cloud } from "lucide-react";
+import { FileSpreadsheet, Database, FileText, ShieldCheck, Server, Cloud, Lock } from "lucide-react";
 
 const dataSources = [
   { name: "Planilhas & Excel", icon: FileSpreadsheet, description: "Importe direto do Excel, Google Sheets e outros" },
@@ -64,38 +64,59 @@ const IntegrationsSection = () => {
           ))}
         </div>
 
-        {/* AI Models */}
-        <div className="mx-auto grid max-w-3xl gap-2">
-          <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
-            Escolha o modelo de IA ideal para sua operação
-          </p>
-          {aiModels.map((model, i) => (
-            <motion.div
-              key={model.name}
-              initial={{ opacity: 0, x: 16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.05 + i * 0.06, duration: 0.4 }}
-              className={`flex items-center gap-4 rounded-xl border px-5 py-4 transition-all duration-300 ${
-                model.type === "local"
-                  ? "border-primary/30 bg-primary/5 hover:bg-primary/10"
-                  : "border-border/30 bg-card/30 hover:bg-card/50"
-              }`}
-            >
-              {model.type === "local" ? (
-                <Server className="h-5 w-5 shrink-0 text-primary" />
-              ) : (
-                <Cloud className="h-5 w-5 shrink-0 text-muted-foreground" />
-              )}
-              <span className="flex-1 text-sm font-medium text-foreground">{model.name}</span>
-              {model.type === "local" && (
-                <span className="flex items-center gap-1.5 text-[11px] text-primary">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Dados nunca saem da sua rede
+        {/* AI Models — security narrative */}
+        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+          {/* Cloud models */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="rounded-2xl border border-border/30 bg-card/30 p-7"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <Cloud className="h-6 w-6 text-muted-foreground" />
+              <h3 className="text-base font-semibold text-foreground">IA na Nuvem</h3>
+            </div>
+            <p className="mb-5 text-sm text-muted-foreground">
+              Acesse os modelos mais avançados do mercado para máxima performance nas respostas.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {aiModels.filter(m => m.type === "cloud").map((model) => (
+                <span key={model.name} className="rounded-full border border-border/40 bg-background/50 px-3 py-1 text-xs text-muted-foreground">
+                  {model.name}
                 </span>
-              )}
-            </motion.div>
-          ))}
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Local model — security highlight */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="relative rounded-2xl border border-primary/30 bg-primary/5 p-7"
+          >
+            <div className="absolute -top-3 right-5 rounded-full border border-primary/30 bg-primary/10 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+              Recomendado
+            </div>
+            <div className="mb-4 flex items-center gap-3">
+              <Server className="h-6 w-6 text-primary" />
+              <h3 className="text-base font-semibold text-foreground">IA Privada</h3>
+            </div>
+            <p className="mb-5 text-sm text-muted-foreground">
+              Processe tudo dentro da sua infraestrutura. Seus dados sensíveis nunca saem da empresa.
+            </p>
+            <div className="flex flex-col gap-2">
+              <span className="flex items-center gap-2 text-xs text-primary">
+                <ShieldCheck className="h-4 w-4" /> Compliance com LGPD e políticas internas
+              </span>
+              <span className="flex items-center gap-2 text-xs text-primary">
+                <Lock className="h-4 w-4" /> Zero exposição de dados a terceiros
+              </span>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
