@@ -1,6 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { FileSpreadsheet, Database, FileText, ShieldCheck, Server, Cloud } from "lucide-react";
+import { FileSpreadsheet, Database, FileText, ShieldCheck, Server, Cloud, Lock } from "lucide-react";
 
 const dataSources = [
   { name: "Planilhas & Excel", icon: FileSpreadsheet, description: "Importe direto do Excel, Google Sheets e outros" },
