@@ -47,7 +47,7 @@ const FeatureCard = ({ feature, index }: { feature: typeof features[0]; index: n
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className="group relative rounded-xl border border-border/50 bg-card/40 p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/60"
+      className="group relative rounded-xl border border-border/50 bg-card/40 p-5 sm:p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/60"
     >
       {/* Glow effect on hover */}
       <div className="absolute inset-0 rounded-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" 
@@ -76,8 +76,8 @@ const FeaturesSection = () => {
   const titleInView = useInView(titleRef, { once: true, margin: "-80px" });
 
   return (
-    <section id="features" className="relative py-32">
-      <div className="container mx-auto max-w-6xl px-6">
+    <section id="features" className="relative py-16 sm:py-32">
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6">
         <motion.div
           ref={titleRef}
           initial={{ opacity: 0, y: 30 }}
@@ -88,7 +88,7 @@ const FeaturesSection = () => {
           <span className="mb-4 inline-block rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-primary">
             Funcionalidades
           </span>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
             Tudo que você precisa para{" "}
             <span className="text-gradient">gerir conhecimento</span>
           </h2>

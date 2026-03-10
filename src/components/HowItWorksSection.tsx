@@ -31,11 +31,11 @@ const HowItWorksSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="how-it-works" className="relative overflow-hidden py-32">
+    <section id="how-it-works" className="relative overflow-hidden py-16 sm:py-32">
       {/* Background grid */}
       <div className="absolute inset-0 grid-bg radial-fade opacity-40" />
 
-      <div className="container relative mx-auto max-w-6xl px-6">
+      <div className="container relative mx-auto max-w-6xl px-4 sm:px-6">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 30 }}
@@ -46,7 +46,7 @@ const HowItWorksSection = () => {
           <span className="mb-4 inline-block rounded-full border border-accent/20 bg-accent/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-accent">
             Como Funciona
           </span>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
             Simples.{" "}
             <span className="text-gradient">Poderoso.</span>{" "}
             Seguro.
@@ -64,7 +64,7 @@ const HowItWorksSection = () => {
                 transition={{ duration: 0.6, delay: 0.2 + index * 0.15 }}
                 className="group relative flex-1"
               >
-                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/30 p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/50">
+                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/30 p-5 sm:p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/50">
                   {/* Animated number background */}
                   <span className="absolute -right-4 -top-6 font-display text-[120px] font-bold leading-none text-foreground/[0.03] transition-all duration-500 group-hover:text-primary/[0.06] group-hover:scale-110">
                     {step.number}

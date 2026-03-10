@@ -68,8 +68,8 @@ const CTASection = () => {
   ];
 
   return (
-    <section id="solicitar-acesso" className="relative py-32">
-      <div className="container mx-auto max-w-2xl px-6">
+    <section id="solicitar-acesso" className="relative py-16 sm:py-32">
+      <div className="container mx-auto max-w-2xl px-4 sm:px-6">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 40 }}
@@ -77,7 +77,7 @@ const CTASection = () => {
           transition={{ duration: 0.7, ease: [0.21, 0.47, 0.32, 0.98] }}
         >
           <div className="mb-12 text-center">
-            <h2 className="font-display text-3xl font-bold leading-tight md:text-5xl">
+            <h2 className="font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
               Solicitar acesso
             </h2>
             <p className="mt-4 text-muted-foreground">
@@ -101,7 +101,7 @@ const CTASection = () => {
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 <input
                   type="text"
                   name="company_name"

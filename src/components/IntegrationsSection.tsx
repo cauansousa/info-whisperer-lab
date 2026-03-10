@@ -21,10 +21,10 @@ const IntegrationsSection = () => {
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="integracoes" className="relative py-32">
+    <section id="integracoes" className="relative py-16 sm:py-32">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-      <div className="container mx-auto max-w-6xl px-6">
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 30 }}
@@ -35,7 +35,7 @@ const IntegrationsSection = () => {
           <span className="mb-4 inline-block rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-primary">
             Integrações
           </span>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
             Conecte os dados que{" "}
             <span className="text-gradient">você já tem.</span>
           </h2>
