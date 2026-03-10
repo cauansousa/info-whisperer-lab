@@ -88,7 +88,7 @@ const FeaturesSection = () => {
           <span className="mb-4 inline-block rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-primary">
             Funcionalidades
           </span>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
             Tudo que você precisa para{" "}
             <span className="text-gradient">gerir conhecimento</span>
           </h2>
