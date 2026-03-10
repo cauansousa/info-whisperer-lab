@@ -64,7 +64,7 @@ const HowItWorksSection = () => {
                 transition={{ duration: 0.6, delay: 0.2 + index * 0.15 }}
                 className="group relative flex-1"
               >
-                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/30 p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/50">
+                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card/30 p-5 sm:p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:bg-card/50">
                   {/* Animated number background */}
                   <span className="absolute -right-4 -top-6 font-display text-[120px] font-bold leading-none text-foreground/[0.03] transition-all duration-500 group-hover:text-primary/[0.06] group-hover:scale-110">
                     {step.number}
