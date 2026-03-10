@@ -31,11 +31,11 @@ const HowItWorksSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="how-it-works" className="relative overflow-hidden py-32">
+    <section id="how-it-works" className="relative overflow-hidden py-16 sm:py-32">
       {/* Background grid */}
       <div className="absolute inset-0 grid-bg radial-fade opacity-40" />
 
-      <div className="container relative mx-auto max-w-6xl px-6">
+      <div className="container relative mx-auto max-w-6xl px-4 sm:px-6">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 30 }}
