@@ -37,7 +37,10 @@ const IntegrationsSection = () => {
           </span>
           <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
             Conecte os dados que{" "}
-            <span className="text-gradient">você já tem.</span>
+             <span className="text-gradient">você já tem.</span>
+          </h2>
+        </motion.div>
+
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-muted-foreground">
             Planilhas, bancos de dados ou documentos — tudo vira inteligência em minutos.

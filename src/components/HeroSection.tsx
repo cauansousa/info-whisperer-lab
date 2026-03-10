@@ -31,7 +31,7 @@ const HeroSection = () => {
 
       <motion.div
         style={{ opacity, scale, y }}
-        className="container relative z-10 mx-auto max-w-6xl px-6"
+        className="container relative z-10 mx-auto max-w-6xl px-4 sm:px-6"
       >
         <div className="text-center">
           <motion.div
