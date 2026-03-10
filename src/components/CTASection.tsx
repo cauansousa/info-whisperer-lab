@@ -77,7 +77,7 @@ const CTASection = () => {
           transition={{ duration: 0.7, ease: [0.21, 0.47, 0.32, 0.98] }}
         >
           <div className="mb-12 text-center">
-            <h2 className="font-display text-3xl font-bold leading-tight md:text-5xl">
+            <h2 className="font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
               Solicitar acesso
             </h2>
             <p className="mt-4 text-muted-foreground">
