@@ -46,7 +46,7 @@ const HowItWorksSection = () => {
           <span className="mb-4 inline-block rounded-full border border-accent/20 bg-accent/5 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-accent">
             Como Funciona
           </span>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight md:text-5xl">
+          <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
             Simples.{" "}
             <span className="text-gradient">Poderoso.</span>{" "}
             Seguro.
