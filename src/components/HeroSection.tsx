@@ -45,7 +45,7 @@ const HeroSection = () => {
             </span>
           </motion.div>
 
-          <h1 className="font-display text-6xl font-bold leading-[0.95] tracking-tight md:text-8xl lg:text-[9rem]">
+          <h1 className="font-display text-4xl font-bold leading-[0.95] tracking-tight sm:text-6xl md:text-8xl lg:text-[9rem]">
             <span className="block overflow-hidden" style={{ perspective: "600px" }}>
               {words1.map((char, i) => (
                 <motion.span
