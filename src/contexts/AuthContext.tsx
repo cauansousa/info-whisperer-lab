@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchMe]);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+    await authSupabase.auth.signOut();
     window.location.href = "/";
   }, []);
 

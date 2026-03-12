@@ -9,7 +9,7 @@ import type {
 const API_BASE = "https://api.knowledge.cauansousa.com";
 
 async function getToken(): Promise<string> {
-  const { data } = await supabase.auth.getSession();
+  const { data } = await authSupabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error("Not authenticated");
   return token;

@@ -18,7 +18,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { error: authError } = await authSupabase.auth.signInWithPassword({ email, password });
       if (authError) throw authError;
       // Hard navigation to ensure cookies are sent
       window.location.href = redirect;

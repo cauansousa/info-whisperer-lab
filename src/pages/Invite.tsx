@@ -56,7 +56,7 @@ export default function Invite() {
     setError("");
     setSubmitting(true);
     try {
-      const { error: authError } = await supabase.auth.signUp({ email, password });
+      const { error: authError } = await authSupabase.auth.signUp({ email, password });
       if (authError) throw authError;
       // After signup, accept the invite
       await api.acceptInvitation(token);
