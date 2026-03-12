@@ -81,8 +81,18 @@ const Navbar = () => {
                 ))}
               </nav>
 
-              {/* Bottom CTA */}
-              <div className="border-t border-border/30 p-6">
+              {/* Bottom actions */}
+              <div className="border-t border-border/30 p-6 space-y-3">
+                <motion.a
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.25 }}
+                  className="flex w-full items-center justify-center rounded-lg border border-border/50 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary/50"
+                >
+                  Entrar
+                </motion.a>
                 <motion.a
                   href="#contato"
                   onClick={() => setOpen(false)}
