@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { authSupabase } from "@/lib/auth-client";
 import { api } from "@/lib/api";
 import type { MeResponse, Role } from "@/types";
 import type { Session } from "@supabase/supabase-js";

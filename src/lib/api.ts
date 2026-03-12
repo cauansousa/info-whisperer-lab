@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { authSupabase } from "@/lib/auth-client";
 import type {
   MeResponse, Invitation, Agent, Library, Document as DocType,
   Chat, ChatMessage, QueryRequest, QueryResponse,
