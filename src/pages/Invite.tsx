@@ -18,7 +18,7 @@ export default function Invite() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    authSupabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
     });
