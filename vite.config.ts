@@ -1,14 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import { fileURLToPath, URL } from "node:url";
 
-
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   server: {
     host: true,
     port: Number(process.env.PORT ?? 8080),
-    strictPort: true,
     hmr: {
       overlay: false,
     },
@@ -16,7 +13,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
-}));
+});
