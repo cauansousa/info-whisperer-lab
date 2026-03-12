@@ -22,7 +22,7 @@ export default function Invite() {
       setSession(data.session);
       setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: { subscription } } = authSupabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
     });
     return () => subscription.unsubscribe();
