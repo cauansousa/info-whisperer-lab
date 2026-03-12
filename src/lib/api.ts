@@ -7,7 +7,7 @@ import type {
 } from "@/types";
 
 /* ── Service hosts ── */
-const AUTH_BASE    = "http://18.230.243.121:8001";
+const AUTH_BASE       = "http://18.230.243.121:8001";
 const GOVERNANCE_BASE = "http://18.230.243.121:8002";
 const INGESTION_BASE  = "http://18.230.243.121:8003";
 const MODEL_BASE      = "http://18.230.243.121:8000";
@@ -20,7 +20,7 @@ async function getToken(): Promise<string> {
   return token;
 }
 
-/* ── Generic fetch for the 4 API services ── */
+/* ── Generic fetch ── */
 async function apiFetch<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
   const res = await fetch(`${baseUrl}${path}`, {
@@ -62,13 +62,8 @@ async function apiFetchNoContentType<T>(baseUrl: string, path: string, options: 
   return res.json();
 }
 
-/* ── Supabase direct helper ── */
-function sbThrow(error: { message: string } | null) {
-  if (error) throw new Error(error.message);
-}
-
 export const api = {
-  // ─── Auth service (port 8001) ───
+  // ─── Auth service (8001) ───
   getMe: () => apiFetch<MeResponse>(AUTH_BASE, "/auth/me"),
   createTenant: (name: string) =>
     apiFetch<{ tenant: Tenant; profile: Profile }>(AUTH_BASE, "/auth/tenants", {
@@ -87,26 +82,61 @@ export const api = {
     apiFetch<Profile>(AUTH_BASE, `/auth/users/${userId}/role`, {
       method: "PATCH", body: JSON.stringify({ role }),
     }),
+  getUsers: () => apiFetch<Profile[]>(AUTH_BASE, "/auth/users"),
+  getTenantInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/auth/invitations"),
 
-  // ─── Governance service (port 8002) ───
+  // ─── Governance service (8002) ───
+  // Library permissions
   getLibraryPermissions: (id: string) =>
     apiFetch<Permission[]>(GOVERNANCE_BASE, `/governance/library-permissions/${id}`),
   addLibraryPermission: (id: string, subject_type: string, subject_id: string, access_level: string) =>
     apiFetch<Permission>(GOVERNANCE_BASE, "/governance/library-permissions", {
       method: "POST", body: JSON.stringify({ library_id: id, subject_type, subject_id, access_level }),
     }),
+  getAllowedLibraries: () =>
+    apiFetch<{ library_ids: string[] }>(GOVERNANCE_BASE, "/governance/allowed-libraries"),
+
+  // Libraries
+  getLibraries: () => apiFetch<Library[]>(GOVERNANCE_BASE, "/governance/libraries"),
+  getLibrary: (id: string) => apiFetch<Library>(GOVERNANCE_BASE, `/governance/libraries/${id}`),
+  createLibrary: (name: string, description?: string) =>
+    apiFetch<Library>(GOVERNANCE_BASE, "/governance/libraries", {
+      method: "POST", body: JSON.stringify({ name, description }),
+    }),
+  deleteLibrary: (id: string) =>
+    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/governance/libraries/${id}`, { method: "DELETE" }),
+
+  // Documents
+  getDocuments: (libraryId: string) =>
+    apiFetch<DocType[]>(GOVERNANCE_BASE, `/governance/documents?library_id=${libraryId}`),
+
+  // Agents
+  getAgents: () => apiFetch<Agent[]>(GOVERNANCE_BASE, "/governance/agents"),
+  createAgent: (body: Record<string, unknown>) =>
+    apiFetch<Agent>(GOVERNANCE_BASE, "/governance/agents", {
+      method: "POST", body: JSON.stringify(body),
+    }),
+  updateAgent: (id: string, body: Record<string, unknown>) =>
+    apiFetch<Agent>(GOVERNANCE_BASE, `/governance/agents/${id}`, {
+      method: "PUT", body: JSON.stringify(body),
+    }),
+  deleteAgent: (id: string) =>
+    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/governance/agents/${id}`, { method: "DELETE" }),
+
+  // Groups
+  getGroups: () => apiFetch<Group[]>(GOVERNANCE_BASE, "/governance/groups"),
   createGroup: (name: string) =>
     apiFetch<Group>(GOVERNANCE_BASE, "/governance/groups", {
       method: "POST", body: JSON.stringify({ name }),
     }),
+  getGroupMembers: (groupId: string) =>
+    apiFetch<GroupMember[]>(GOVERNANCE_BASE, `/governance/groups/${groupId}/members`),
   addGroupMember: (id: string, userId: string) =>
     apiFetch<GroupMember>(GOVERNANCE_BASE, `/governance/groups/${id}/members`, {
       method: "POST", body: JSON.stringify({ user_id: userId }),
     }),
-  getAllowedLibraries: () =>
-    apiFetch<{ library_ids: string[] }>(GOVERNANCE_BASE, "/governance/allowed-libraries"),
 
-  // ─── Ingestion service (port 8003) ───
+  // ─── Ingestion service (8003) ───
   ingestFile: async (file: File, libraryId: string, title: string): Promise<IngestResponse> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -117,168 +147,23 @@ export const api = {
     });
   },
 
-  // ─── Model / Query service (port 8000) ───
+  // ─── Model / Query service (8000) ───
   query: (body: QueryRequest) =>
     apiFetch<QueryResponse>(MODEL_BASE, "/query", { method: "POST", body: JSON.stringify(body) }),
 
-  // ─── Supabase direct (no API proxy) ───
-
   // Chats
-  getChats: async (): Promise<Chat[]> => {
-    const { data, error } = await authSupabase
-      .from("chats").select("*").order("created_at", { ascending: false });
-    sbThrow(error);
-    return data as Chat[];
-  },
-  deleteChat: async (id: string) => {
-    const { error } = await authSupabase.from("chats").delete().eq("id", id);
-    sbThrow(error);
-    return { ok: true as const };
-  },
-  getChatMessages: async (chatId: string): Promise<ChatMessage[]> => {
-    const { data, error } = await authSupabase
-      .from("chat_messages").select("*").eq("chat_id", chatId).order("created_at");
-    sbThrow(error);
-    return data as ChatMessage[];
-  },
-
-  // Agents
-  getAgents: async (): Promise<Agent[]> => {
-    const { data, error } = await authSupabase
-      .from("agents").select("*, agent_libraries(library_id, libraries(name))").order("created_at", { ascending: false });
-    sbThrow(error);
-    return data as Agent[];
-  },
-  createAgent: async (body: Record<string, unknown>): Promise<Agent> => {
-    const { library_ids, ...agentData } = body as any;
-    const config = {
-      system_prompt: agentData.system_prompt,
-      model_provider_id: agentData.model_provider_id,
-      tone: agentData.tone,
-      params: { temperature: agentData.temperature, max_tokens: agentData.max_tokens, top_p: agentData.top_p },
-      integrations: agentData.integrations,
-    };
-    const { data, error } = await authSupabase
-      .from("agents").insert({ name: agentData.name, description: agentData.description, config }).select().single();
-    sbThrow(error);
-    // Link libraries
-    if (library_ids?.length) {
-      const rows = library_ids.map((lid: string) => ({ agent_id: data!.id, library_id: lid }));
-      await authSupabase.from("agent_libraries").insert(rows);
-    }
-    return data as Agent;
-  },
-  updateAgent: async (id: string, body: Record<string, unknown>): Promise<Agent> => {
-    const { library_ids, ...agentData } = body as any;
-    const config = {
-      system_prompt: agentData.system_prompt,
-      model_provider_id: agentData.model_provider_id,
-      tone: agentData.tone,
-      params: { temperature: agentData.temperature, max_tokens: agentData.max_tokens, top_p: agentData.top_p },
-      integrations: agentData.integrations,
-    };
-    const { data, error } = await authSupabase
-      .from("agents").update({ name: agentData.name, description: agentData.description, config }).eq("id", id).select().single();
-    sbThrow(error);
-    // Re-link libraries
-    await authSupabase.from("agent_libraries").delete().eq("agent_id", id);
-    if (library_ids?.length) {
-      const rows = library_ids.map((lid: string) => ({ agent_id: id, library_id: lid }));
-      await authSupabase.from("agent_libraries").insert(rows);
-    }
-    return data as Agent;
-  },
-  deleteAgent: async (id: string) => {
-    const { error } = await authSupabase.from("agents").delete().eq("id", id);
-    sbThrow(error);
-    return { ok: true as const };
-  },
-
-  // Libraries
-  getLibraries: async (): Promise<Library[]> => {
-    const { data, error } = await authSupabase
-      .from("libraries").select("*").order("created_at", { ascending: false });
-    sbThrow(error);
-    return data as Library[];
-  },
-  getLibrary: async (id: string): Promise<Library> => {
-    const { data, error } = await authSupabase
-      .from("libraries").select("*").eq("id", id).single();
-    sbThrow(error);
-    return data as Library;
-  },
-  createLibrary: async (name: string, description?: string): Promise<Library> => {
-    const { data, error } = await authSupabase
-      .from("libraries").insert({ name, description }).select().single();
-    sbThrow(error);
-    return data as Library;
-  },
-  deleteLibrary: async (id: string) => {
-    const { error } = await authSupabase.from("libraries").delete().eq("id", id);
-    sbThrow(error);
-    return { ok: true as const };
-  },
-
-  // Documents
-  getDocuments: async (libraryId: string): Promise<DocType[]> => {
-    const { data, error } = await authSupabase
-      .from("documents").select("*").eq("library_id", libraryId).order("created_at", { ascending: false });
-    sbThrow(error);
-    return data as DocType[];
-  },
-
-  // Profiles / Users
-  getUsers: async (): Promise<Profile[]> => {
-    const { data, error } = await authSupabase
-      .from("profiles").select("*").order("created_at");
-    sbThrow(error);
-    return data as Profile[];
-  },
-
-  // Groups (read)
-  getGroups: async (): Promise<Group[]> => {
-    const { data, error } = await authSupabase
-      .from("groups").select("*").order("created_at", { ascending: false });
-    sbThrow(error);
-    return data as Group[];
-  },
-
-  // Group members (read)
-  getGroupMembers: async (groupId: string): Promise<GroupMember[]> => {
-    const { data, error } = await authSupabase
-      .from("group_members").select("*").eq("group_id", groupId);
-    sbThrow(error);
-    return data as GroupMember[];
-  },
+  getChats: () => apiFetch<Chat[]>(MODEL_BASE, "/chats"),
+  getChat: (id: string) => apiFetch<Chat>(MODEL_BASE, `/chats/${id}`),
+  deleteChat: (id: string) =>
+    apiFetch<{ ok: true }>(MODEL_BASE, `/chats/${id}`, { method: "DELETE" }),
+  getChatMessages: (chatId: string) =>
+    apiFetch<ChatMessage[]>(MODEL_BASE, `/chats/${chatId}/messages`),
 
   // LLM Config
-  getLLMProviders: async (): Promise<LLMProvider[]> => {
-    const { data, error } = await authSupabase
-      .from("llm_providers").select("*");
-    sbThrow(error);
-    return data as LLMProvider[];
-  },
-  getLLMConfig: async (): Promise<TenantLLMConfig[]> => {
-    const { data, error } = await authSupabase
-      .from("tenant_llm_configs").select("*, llm_providers(*)");
-    sbThrow(error);
-    return data as TenantLLMConfig[];
-  },
-  updateLLMConfig: async (providerId: string, apiKey: string, settings?: Record<string, unknown>): Promise<TenantLLMConfig> => {
-    const { data, error } = await authSupabase
-      .from("tenant_llm_configs")
-      .upsert({ provider_id: providerId, api_key: apiKey, settings }, { onConflict: "tenant_id,provider_id" })
-      .select("*, llm_providers(*)")
-      .single();
-    sbThrow(error);
-    return data as TenantLLMConfig;
-  },
-
-  // Invitations (tenant list - Supabase direct)
-  getTenantInvitations: async (): Promise<Invitation[]> => {
-    const { data, error } = await authSupabase
-      .from("invitations").select("*").order("created_at", { ascending: false });
-    sbThrow(error);
-    return data as Invitation[];
-  },
+  getLLMProviders: () => apiFetch<LLMProvider[]>(MODEL_BASE, "/llm-providers"),
+  getLLMConfig: () => apiFetch<TenantLLMConfig[]>(MODEL_BASE, "/llm-config"),
+  updateLLMConfig: (providerId: string, apiKey: string, settings?: Record<string, unknown>) =>
+    apiFetch<TenantLLMConfig>(MODEL_BASE, "/llm-config", {
+      method: "PUT", body: JSON.stringify({ provider_id: providerId, api_key: apiKey, settings }),
+    }),
 };
