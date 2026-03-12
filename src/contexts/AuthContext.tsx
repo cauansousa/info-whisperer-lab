@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchMe(session);
       }
     );
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    authSupabase.auth.getSession().then(({ data: { session } }) => {
       fetchMe(session);
     });
     return () => subscription.unsubscribe();
