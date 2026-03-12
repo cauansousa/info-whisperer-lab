@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { authSupabase } from "@/lib/auth-client";
 import { api } from "@/lib/api";
 import type { MeResponse, Role } from "@/types";
 import type { Session } from "@supabase/supabase-js";
@@ -44,24 +44,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = authSupabase.auth.onAuthStateChange(
       (_event, session) => {
         fetchMe(session);
       }
     );
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    authSupabase.auth.getSession().then(({ data: { session } }) => {
       fetchMe(session);
     });
     return () => subscription.unsubscribe();
   }, [fetchMe]);
 
   const refresh = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await authSupabase.auth.getSession();
     await fetchMe(session);
   }, [fetchMe]);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+    await authSupabase.auth.signOut();
     window.location.href = "/";
   }, []);
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { authSupabase } from "@/lib/auth-client";
 import { api } from "@/lib/api";
 import { Brain, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,11 @@ export default function Invite() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    authSupabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: { subscription } } = authSupabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
     });
     return () => subscription.unsubscribe();
@@ -56,7 +56,7 @@ export default function Invite() {
     setError("");
     setSubmitting(true);
     try {
-      const { error: authError } = await supabase.auth.signUp({ email, password });
+      const { error: authError } = await authSupabase.auth.signUp({ email, password });
       if (authError) throw authError;
       // After signup, accept the invite
       await api.acceptInvitation(token);

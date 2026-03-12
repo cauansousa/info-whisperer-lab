@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { authSupabase } from "@/lib/auth-client";
 import type {
   MeResponse, Invitation, Agent, Library, Document as DocType,
   Chat, ChatMessage, QueryRequest, QueryResponse,
@@ -9,7 +9,7 @@ import type {
 const API_BASE = "https://api.knowledge.cauansousa.com";
 
 async function getToken(): Promise<string> {
-  const { data } = await supabase.auth.getSession();
+  const { data } = await authSupabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new Error("Not authenticated");
   return token;
