@@ -6,8 +6,13 @@ import type {
   IngestResponse, Profile, Tenant,
 } from "@/types";
 
-const API_BASE = "https://api.knowledge.cauansousa.com";
+/* ── Service hosts ── */
+const AUTH_BASE    = "http://18.230.243.121:8001";
+const GOVERNANCE_BASE = "http://18.230.243.121:8002";
+const INGESTION_BASE  = "http://18.230.243.121:8003";
+const MODEL_BASE      = "http://18.230.243.121:8000";
 
+/* ── Token helper ── */
 async function getToken(): Promise<string> {
   const { data } = await authSupabase.auth.getSession();
   const token = data.session?.access_token;
@@ -15,9 +20,10 @@ async function getToken(): Promise<string> {
   return token;
 }
 
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+/* ── Generic fetch for the 4 API services ── */
+async function apiFetch<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -36,9 +42,9 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   return res.json();
 }
 
-async function apiFetchNoContentType<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function apiFetchNoContentType<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -56,96 +62,223 @@ async function apiFetchNoContentType<T>(path: string, options: RequestInit = {})
   return res.json();
 }
 
-// Auth
+/* ── Supabase direct helper ── */
+function sbThrow(error: { message: string } | null) {
+  if (error) throw new Error(error.message);
+}
+
 export const api = {
-  getMe: () => apiFetch<MeResponse>("/auth/me"),
+  // ─── Auth service (port 8001) ───
+  getMe: () => apiFetch<MeResponse>(AUTH_BASE, "/auth/me"),
   createTenant: (name: string) =>
-    apiFetch<{ tenant: Tenant; profile: Profile }>("/auth/tenants", {
+    apiFetch<{ tenant: Tenant; profile: Profile }>(AUTH_BASE, "/auth/tenants", {
       method: "POST", body: JSON.stringify({ name }),
     }),
   inviteUser: (email: string, role: string = "member") =>
-    apiFetch<Invitation>("/auth/invitations", {
+    apiFetch<Invitation>(AUTH_BASE, "/auth/invitations", {
       method: "POST", body: JSON.stringify({ email, role }),
     }),
-  getMyInvitations: () => apiFetch<Invitation[]>("/auth/invitations/mine"),
+  getMyInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/auth/invitations/mine"),
   acceptInvitation: (token: string) =>
-    apiFetch<{ tenant: Tenant; profile: Profile }>("/auth/invitations/accept", {
+    apiFetch<{ tenant: Tenant; profile: Profile }>(AUTH_BASE, "/auth/invitations/accept", {
       method: "POST", body: JSON.stringify({ token }),
     }),
-  getTenantInvitations: () => apiFetch<Invitation[]>("/auth/invitations"),
   updateUserRole: (userId: string, role: string) =>
-    apiFetch<Profile>(`/auth/users/${userId}/role`, {
+    apiFetch<Profile>(AUTH_BASE, `/auth/users/${userId}/role`, {
       method: "PATCH", body: JSON.stringify({ role }),
     }),
-  getUsers: () => apiFetch<Profile[]>("/auth/users"),
 
-  // Agents
-  getAgents: () => apiFetch<Agent[]>("/agents"),
-  createAgent: (body: Record<string, unknown>) =>
-    apiFetch<Agent>("/agents", { method: "POST", body: JSON.stringify(body) }),
-  updateAgent: (id: string, body: Record<string, unknown>) =>
-    apiFetch<Agent>(`/agents/${id}`, { method: "PUT", body: JSON.stringify(body) }),
-  deleteAgent: (id: string) =>
-    apiFetch<{ ok: true }>(`/agents/${id}`, { method: "DELETE" }),
-
-  // Libraries
-  getLibraries: () => apiFetch<Library[]>("/libraries"),
-  getLibrary: (id: string) => apiFetch<Library>(`/libraries/${id}`),
-  createLibrary: (name: string, description?: string) =>
-    apiFetch<Library>("/libraries", {
-      method: "POST", body: JSON.stringify({ name, description }),
-    }),
-  deleteLibrary: (id: string) =>
-    apiFetch<{ ok: true }>(`/libraries/${id}`, { method: "DELETE" }),
+  // ─── Governance service (port 8002) ───
   getLibraryPermissions: (id: string) =>
-    apiFetch<Permission[]>(`/libraries/${id}/permissions`),
+    apiFetch<Permission[]>(GOVERNANCE_BASE, `/governance/library-permissions/${id}`),
   addLibraryPermission: (id: string, subject_type: string, subject_id: string, access_level: string) =>
-    apiFetch<Permission>(`/libraries/${id}/permissions`, {
-      method: "POST", body: JSON.stringify({ subject_type, subject_id, access_level }),
+    apiFetch<Permission>(GOVERNANCE_BASE, "/governance/library-permissions", {
+      method: "POST", body: JSON.stringify({ library_id: id, subject_type, subject_id, access_level }),
     }),
+  createGroup: (name: string) =>
+    apiFetch<Group>(GOVERNANCE_BASE, "/governance/groups", {
+      method: "POST", body: JSON.stringify({ name }),
+    }),
+  addGroupMember: (id: string, userId: string) =>
+    apiFetch<GroupMember>(GOVERNANCE_BASE, `/governance/groups/${id}/members`, {
+      method: "POST", body: JSON.stringify({ user_id: userId }),
+    }),
+  getAllowedLibraries: () =>
+    apiFetch<{ library_ids: string[] }>(GOVERNANCE_BASE, "/governance/allowed-libraries"),
 
-  // Documents
-  getDocuments: (libraryId: string) =>
-    apiFetch<DocType[]>(`/documents?library_id=${libraryId}`),
+  // ─── Ingestion service (port 8003) ───
   ingestFile: async (file: File, libraryId: string, title: string): Promise<IngestResponse> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("library_id", libraryId);
     formData.append("title", title);
-    return apiFetchNoContentType<IngestResponse>("/ingest/file", {
+    return apiFetchNoContentType<IngestResponse>(INGESTION_BASE, "/ingest/file", {
       method: "POST", body: formData,
     });
   },
 
-  // Chats
-  getChats: () => apiFetch<Chat[]>("/chats"),
-  deleteChat: (id: string) =>
-    apiFetch<{ ok: true }>(`/chats/${id}`, { method: "DELETE" }),
-  getChatMessages: (chatId: string) =>
-    apiFetch<ChatMessage[]>(`/chats/${chatId}/messages`),
+  // ─── Model / Query service (port 8000) ───
   query: (body: QueryRequest) =>
-    apiFetch<QueryResponse>("/query", { method: "POST", body: JSON.stringify(body) }),
+    apiFetch<QueryResponse>(MODEL_BASE, "/query", { method: "POST", body: JSON.stringify(body) }),
 
-  // Groups
-  getGroups: () => apiFetch<Group[]>("/groups"),
-  createGroup: (name: string) =>
-    apiFetch<Group>("/groups", { method: "POST", body: JSON.stringify({ name }) }),
-  getGroupMembers: (id: string) =>
-    apiFetch<GroupMember[]>(`/groups/${id}/members`),
-  addGroupMember: (id: string, userId: string) =>
-    apiFetch<GroupMember>(`/groups/${id}/members`, {
-      method: "POST", body: JSON.stringify({ user_id: userId }),
-    }),
+  // ─── Supabase direct (no API proxy) ───
+
+  // Chats
+  getChats: async (): Promise<Chat[]> => {
+    const { data, error } = await authSupabase
+      .from("chats").select("*").order("created_at", { ascending: false });
+    sbThrow(error);
+    return data as Chat[];
+  },
+  deleteChat: async (id: string) => {
+    const { error } = await authSupabase.from("chats").delete().eq("id", id);
+    sbThrow(error);
+    return { ok: true as const };
+  },
+  getChatMessages: async (chatId: string): Promise<ChatMessage[]> => {
+    const { data, error } = await authSupabase
+      .from("chat_messages").select("*").eq("chat_id", chatId).order("created_at");
+    sbThrow(error);
+    return data as ChatMessage[];
+  },
+
+  // Agents
+  getAgents: async (): Promise<Agent[]> => {
+    const { data, error } = await authSupabase
+      .from("agents").select("*, agent_libraries(library_id, libraries(name))").order("created_at", { ascending: false });
+    sbThrow(error);
+    return data as Agent[];
+  },
+  createAgent: async (body: Record<string, unknown>): Promise<Agent> => {
+    const { library_ids, ...agentData } = body as any;
+    const config = {
+      system_prompt: agentData.system_prompt,
+      model_provider_id: agentData.model_provider_id,
+      tone: agentData.tone,
+      params: { temperature: agentData.temperature, max_tokens: agentData.max_tokens, top_p: agentData.top_p },
+      integrations: agentData.integrations,
+    };
+    const { data, error } = await authSupabase
+      .from("agents").insert({ name: agentData.name, description: agentData.description, config }).select().single();
+    sbThrow(error);
+    // Link libraries
+    if (library_ids?.length) {
+      const rows = library_ids.map((lid: string) => ({ agent_id: data!.id, library_id: lid }));
+      await authSupabase.from("agent_libraries").insert(rows);
+    }
+    return data as Agent;
+  },
+  updateAgent: async (id: string, body: Record<string, unknown>): Promise<Agent> => {
+    const { library_ids, ...agentData } = body as any;
+    const config = {
+      system_prompt: agentData.system_prompt,
+      model_provider_id: agentData.model_provider_id,
+      tone: agentData.tone,
+      params: { temperature: agentData.temperature, max_tokens: agentData.max_tokens, top_p: agentData.top_p },
+      integrations: agentData.integrations,
+    };
+    const { data, error } = await authSupabase
+      .from("agents").update({ name: agentData.name, description: agentData.description, config }).eq("id", id).select().single();
+    sbThrow(error);
+    // Re-link libraries
+    await authSupabase.from("agent_libraries").delete().eq("agent_id", id);
+    if (library_ids?.length) {
+      const rows = library_ids.map((lid: string) => ({ agent_id: id, library_id: lid }));
+      await authSupabase.from("agent_libraries").insert(rows);
+    }
+    return data as Agent;
+  },
+  deleteAgent: async (id: string) => {
+    const { error } = await authSupabase.from("agents").delete().eq("id", id);
+    sbThrow(error);
+    return { ok: true as const };
+  },
+
+  // Libraries
+  getLibraries: async (): Promise<Library[]> => {
+    const { data, error } = await authSupabase
+      .from("libraries").select("*").order("created_at", { ascending: false });
+    sbThrow(error);
+    return data as Library[];
+  },
+  getLibrary: async (id: string): Promise<Library> => {
+    const { data, error } = await authSupabase
+      .from("libraries").select("*").eq("id", id).single();
+    sbThrow(error);
+    return data as Library;
+  },
+  createLibrary: async (name: string, description?: string): Promise<Library> => {
+    const { data, error } = await authSupabase
+      .from("libraries").insert({ name, description }).select().single();
+    sbThrow(error);
+    return data as Library;
+  },
+  deleteLibrary: async (id: string) => {
+    const { error } = await authSupabase.from("libraries").delete().eq("id", id);
+    sbThrow(error);
+    return { ok: true as const };
+  },
+
+  // Documents
+  getDocuments: async (libraryId: string): Promise<DocType[]> => {
+    const { data, error } = await authSupabase
+      .from("documents").select("*").eq("library_id", libraryId).order("created_at", { ascending: false });
+    sbThrow(error);
+    return data as DocType[];
+  },
+
+  // Profiles / Users
+  getUsers: async (): Promise<Profile[]> => {
+    const { data, error } = await authSupabase
+      .from("profiles").select("*").order("created_at");
+    sbThrow(error);
+    return data as Profile[];
+  },
+
+  // Groups (read)
+  getGroups: async (): Promise<Group[]> => {
+    const { data, error } = await authSupabase
+      .from("groups").select("*").order("created_at", { ascending: false });
+    sbThrow(error);
+    return data as Group[];
+  },
+
+  // Group members (read)
+  getGroupMembers: async (groupId: string): Promise<GroupMember[]> => {
+    const { data, error } = await authSupabase
+      .from("group_members").select("*").eq("group_id", groupId);
+    sbThrow(error);
+    return data as GroupMember[];
+  },
 
   // LLM Config
-  getLLMProviders: () => apiFetch<LLMProvider[]>("/llm-providers"),
-  getLLMConfig: () => apiFetch<TenantLLMConfig[]>("/llm-config"),
-  updateLLMConfig: (providerId: string, apiKey: string, settings?: Record<string, unknown>) =>
-    apiFetch<TenantLLMConfig>("/llm-config", {
-      method: "PUT", body: JSON.stringify({ provider_id: providerId, api_key: apiKey, settings }),
-    }),
+  getLLMProviders: async (): Promise<LLMProvider[]> => {
+    const { data, error } = await authSupabase
+      .from("llm_providers").select("*");
+    sbThrow(error);
+    return data as LLMProvider[];
+  },
+  getLLMConfig: async (): Promise<TenantLLMConfig[]> => {
+    const { data, error } = await authSupabase
+      .from("tenant_llm_configs").select("*, llm_providers(*)");
+    sbThrow(error);
+    return data as TenantLLMConfig[];
+  },
+  updateLLMConfig: async (providerId: string, apiKey: string, settings?: Record<string, unknown>): Promise<TenantLLMConfig> => {
+    const { data, error } = await authSupabase
+      .from("tenant_llm_configs")
+      .upsert({ provider_id: providerId, api_key: apiKey, settings }, { onConflict: "tenant_id,provider_id" })
+      .select("*, llm_providers(*)")
+      .single();
+    sbThrow(error);
+    return data as TenantLLMConfig;
+  },
 
-  // Governance
-  getAllowedLibraries: () =>
-    apiFetch<{ library_ids: string[] }>("/governance/allowed-libraries"),
+  // Invitations (tenant list - Supabase direct)
+  getTenantInvitations: async (): Promise<Invitation[]> => {
+    const { data, error } = await authSupabase
+      .from("invitations").select("*").order("created_at", { ascending: false });
+    sbThrow(error);
+    return data as Invitation[];
+  },
 };
