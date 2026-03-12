@@ -7,10 +7,10 @@ import type {
 } from "@/types";
 
 /* ── Service hosts ── */
-const AUTH_BASE       = "https://18.230.243.121:8001";
-const GOVERNANCE_BASE = "https://18.230.243.121:8002";
-const INGESTION_BASE  = "https://18.230.243.121:8003";
-const MODEL_BASE      = "https://18.230.243.121:8000";
+const AUTH_BASE       = "https://api.knowledge.cauansousa.com:8001";
+const GOVERNANCE_BASE = "https://api.knowledge.cauansousa.com:8002";
+const INGESTION_BASE  = "https://api.knowledge.cauansousa.com:8003";
+const MODEL_BASE      = "https://api.knowledge.cauansousa.com:8000";
 
 /* ── Token helper ── */
 async function getToken(): Promise<string> {
