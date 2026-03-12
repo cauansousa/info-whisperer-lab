@@ -7,10 +7,11 @@ import type {
 } from "@/types";
 
 /* ── Service hosts ── */
-const AUTH_BASE       = "https://api.knowledge.cauansousa.com:8001";
-const GOVERNANCE_BASE = "https://api.knowledge.cauansousa.com:8002";
-const INGESTION_BASE  = "https://api.knowledge.cauansousa.com:8003";
-const MODEL_BASE      = "https://api.knowledge.cauansousa.com:8000";
+const API_BASE        = "https://api.knowledge.cauansousa.com";
+const AUTH_BASE       = `${API_BASE}/auth`;
+const GOVERNANCE_BASE = `${API_BASE}/governance`;
+const INGESTION_BASE  = `${API_BASE}/ingest`;
+const MODEL_BASE      = `${API_BASE}/model`;
 
 /* ── Token helper ── */
 async function getToken(): Promise<string> {
@@ -63,95 +64,89 @@ async function apiFetchNoContentType<T>(baseUrl: string, path: string, options: 
 }
 
 export const api = {
-  // ─── Auth service (8001) ───
-  getMe: () => apiFetch<MeResponse>(AUTH_BASE, "/auth/me"),
+  // ─── Auth service ───
+  getMe: () => apiFetch<MeResponse>(AUTH_BASE, "/me"),
   createTenant: (name: string) =>
-    apiFetch<{ tenant: Tenant; profile: Profile }>(AUTH_BASE, "/auth/tenants", {
+    apiFetch<{ tenant: Tenant; profile: Profile }>(AUTH_BASE, "/tenants", {
       method: "POST", body: JSON.stringify({ name }),
     }),
   inviteUser: (email: string, role: string = "member") =>
-    apiFetch<Invitation>(AUTH_BASE, "/auth/invitations", {
+    apiFetch<Invitation>(AUTH_BASE, "/invitations", {
       method: "POST", body: JSON.stringify({ email, role }),
     }),
-  getMyInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/auth/invitations/mine"),
+  getMyInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/invitations/mine"),
   acceptInvitation: (token: string) =>
-    apiFetch<{ tenant: Tenant; profile: Profile }>(AUTH_BASE, "/auth/invitations/accept", {
+    apiFetch<{ tenant: Tenant; profile: Profile }>(AUTH_BASE, "/invitations/accept", {
       method: "POST", body: JSON.stringify({ token }),
     }),
   updateUserRole: (userId: string, role: string) =>
-    apiFetch<Profile>(AUTH_BASE, `/auth/users/${userId}/role`, {
+    apiFetch<Profile>(AUTH_BASE, `/users/${userId}/role`, {
       method: "PATCH", body: JSON.stringify({ role }),
     }),
-  getUsers: () => apiFetch<Profile[]>(AUTH_BASE, "/auth/users"),
-  getTenantInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/auth/invitations"),
+  getUsers: () => apiFetch<Profile[]>(AUTH_BASE, "/users"),
+  getTenantInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/invitations"),
 
-  // ─── Governance service (8002) ───
-  // Library permissions
+  // ─── Governance service ───
   getLibraryPermissions: (id: string) =>
-    apiFetch<Permission[]>(GOVERNANCE_BASE, `/governance/library-permissions/${id}`),
+    apiFetch<Permission[]>(GOVERNANCE_BASE, `/library-permissions/${id}`),
   addLibraryPermission: (id: string, subject_type: string, subject_id: string, access_level: string) =>
-    apiFetch<Permission>(GOVERNANCE_BASE, "/governance/library-permissions", {
+    apiFetch<Permission>(GOVERNANCE_BASE, "/library-permissions", {
       method: "POST", body: JSON.stringify({ library_id: id, subject_type, subject_id, access_level }),
     }),
   getAllowedLibraries: () =>
-    apiFetch<{ library_ids: string[] }>(GOVERNANCE_BASE, "/governance/allowed-libraries"),
+    apiFetch<{ library_ids: string[] }>(GOVERNANCE_BASE, "/allowed-libraries"),
 
-  // Libraries
-  getLibraries: () => apiFetch<Library[]>(GOVERNANCE_BASE, "/governance/libraries"),
-  getLibrary: (id: string) => apiFetch<Library>(GOVERNANCE_BASE, `/governance/libraries/${id}`),
+  getLibraries: () => apiFetch<Library[]>(GOVERNANCE_BASE, "/libraries"),
+  getLibrary: (id: string) => apiFetch<Library>(GOVERNANCE_BASE, `/libraries/${id}`),
   createLibrary: (name: string, description?: string) =>
-    apiFetch<Library>(GOVERNANCE_BASE, "/governance/libraries", {
+    apiFetch<Library>(GOVERNANCE_BASE, "/libraries", {
       method: "POST", body: JSON.stringify({ name, description }),
     }),
   deleteLibrary: (id: string) =>
-    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/governance/libraries/${id}`, { method: "DELETE" }),
+    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/libraries/${id}`, { method: "DELETE" }),
 
-  // Documents
   getDocuments: (libraryId: string) =>
-    apiFetch<DocType[]>(GOVERNANCE_BASE, `/governance/documents?library_id=${libraryId}`),
+    apiFetch<DocType[]>(GOVERNANCE_BASE, `/documents?library_id=${libraryId}`),
 
-  // Agents
-  getAgents: () => apiFetch<Agent[]>(GOVERNANCE_BASE, "/governance/agents"),
+  getAgents: () => apiFetch<Agent[]>(GOVERNANCE_BASE, "/agents"),
   createAgent: (body: Record<string, unknown>) =>
-    apiFetch<Agent>(GOVERNANCE_BASE, "/governance/agents", {
+    apiFetch<Agent>(GOVERNANCE_BASE, "/agents", {
       method: "POST", body: JSON.stringify(body),
     }),
   updateAgent: (id: string, body: Record<string, unknown>) =>
-    apiFetch<Agent>(GOVERNANCE_BASE, `/governance/agents/${id}`, {
+    apiFetch<Agent>(GOVERNANCE_BASE, `/agents/${id}`, {
       method: "PUT", body: JSON.stringify(body),
     }),
   deleteAgent: (id: string) =>
-    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/governance/agents/${id}`, { method: "DELETE" }),
+    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/agents/${id}`, { method: "DELETE" }),
 
-  // Groups
-  getGroups: () => apiFetch<Group[]>(GOVERNANCE_BASE, "/governance/groups"),
+  getGroups: () => apiFetch<Group[]>(GOVERNANCE_BASE, "/groups"),
   createGroup: (name: string) =>
-    apiFetch<Group>(GOVERNANCE_BASE, "/governance/groups", {
+    apiFetch<Group>(GOVERNANCE_BASE, "/groups", {
       method: "POST", body: JSON.stringify({ name }),
     }),
   getGroupMembers: (groupId: string) =>
-    apiFetch<GroupMember[]>(GOVERNANCE_BASE, `/governance/groups/${groupId}/members`),
+    apiFetch<GroupMember[]>(GOVERNANCE_BASE, `/groups/${groupId}/members`),
   addGroupMember: (id: string, userId: string) =>
-    apiFetch<GroupMember>(GOVERNANCE_BASE, `/governance/groups/${id}/members`, {
+    apiFetch<GroupMember>(GOVERNANCE_BASE, `/groups/${id}/members`, {
       method: "POST", body: JSON.stringify({ user_id: userId }),
     }),
 
-  // ─── Ingestion service (8003) ───
+  // ─── Ingestion service ───
   ingestFile: async (file: File, libraryId: string, title: string): Promise<IngestResponse> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("library_id", libraryId);
     formData.append("title", title);
-    return apiFetchNoContentType<IngestResponse>(INGESTION_BASE, "/ingest/file", {
+    return apiFetchNoContentType<IngestResponse>(INGESTION_BASE, "/file", {
       method: "POST", body: formData,
     });
   },
 
-  // ─── Model / Query service (8000) ───
+  // ─── Model / Query service ───
   query: (body: QueryRequest) =>
     apiFetch<QueryResponse>(MODEL_BASE, "/query", { method: "POST", body: JSON.stringify(body) }),
 
-  // Chats
   getChats: () => apiFetch<Chat[]>(MODEL_BASE, "/chats"),
   getChat: (id: string) => apiFetch<Chat>(MODEL_BASE, `/chats/${id}`),
   deleteChat: (id: string) =>
@@ -159,7 +154,6 @@ export const api = {
   getChatMessages: (chatId: string) =>
     apiFetch<ChatMessage[]>(MODEL_BASE, `/chats/${chatId}/messages`),
 
-  // LLM Config
   getLLMProviders: () => apiFetch<LLMProvider[]>(MODEL_BASE, "/llm-providers"),
   getLLMConfig: () => apiFetch<TenantLLMConfig[]>(MODEL_BASE, "/llm-config"),
   updateLLMConfig: (providerId: string, apiKey: string, settings?: Record<string, unknown>) =>
