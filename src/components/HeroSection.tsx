@@ -96,10 +96,10 @@ const HeroSection = () => {
             className="mt-12 flex items-center justify-center"
           >
             <a
-              href="#solicitar-acesso"
+              href="/login"
               className="group relative text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              Solicitar acesso antecipado ↓
+              Entrar →
               <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-foreground transition-all duration-300 group-hover:w-full" />
             </a>
           </motion.div>

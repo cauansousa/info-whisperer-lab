@@ -82,14 +82,14 @@ const Navbar = () => {
               {/* Bottom CTA */}
               <div className="border-t border-border/30 p-6">
                 <motion.a
-                  href="#contato"
+                  href="/login"
                   onClick={() => setOpen(false)}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
                   className="flex w-full items-center justify-center rounded-lg bg-foreground px-4 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
                 >
-                  Acesso Antecipado
+                  Entrar
                 </motion.a>
               </div>
             </motion.aside>
