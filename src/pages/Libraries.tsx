@@ -13,7 +13,7 @@ import {
 
 export default function Libraries() {
   const navigate = useNavigate();
-  const [libraries, setLibraries] = useState<Library[]>([]);
+  const [libraries, setLibraries] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState(false);
@@ -22,7 +22,7 @@ export default function Libraries() {
 
   useEffect(() => {
     api.getAllowedLibraries()
-      .then(setLibraries)
+      .then((res) => setLibraries(res.library_ids))
       .catch(() => toast.error("Failed to load libraries"))
       .finally(() => setLoading(false));
   }, []);
