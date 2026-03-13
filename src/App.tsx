@@ -40,6 +40,8 @@ const App = () => (
             <Route path="/app" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route index element={<ChatView />} />
               <Route path="chat/:chatId" element={<ChatConversation />} />
+              <Route path="libraries" element={<UserLibraries />} />
+              <Route path="agents" element={<UserAgents />} />
             </Route>
 
             <Route path="/admin" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

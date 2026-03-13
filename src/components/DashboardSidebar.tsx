@@ -17,6 +17,8 @@ import {
 
 const mainItems = [
   { title: "Chat", url: "/app", icon: MessageSquare, minRole: "member" as const },
+  { title: "My Libraries", url: "/app/libraries", icon: BookOpen, minRole: "member" as const },
+  { title: "My Agents", url: "/app/agents", icon: Bot, minRole: "member" as const },
 ];
 
 const adminItems = [
