@@ -47,9 +47,12 @@ export default function ChatView({ chatId }: ChatViewProps) {
   }, []);
 
   useEffect(() => {
-    Promise.all([api.getChats(), api.getAgents()])
-      .then(([c, a]) => { setChats(c); setAgents(a); })
-      .catch(() => toast.error("Failed to load data"))
+    api.getAgents()
+      .then(setAgents)
+      .catch(() => toast.error("Failed to load agents"));
+    api.getChats()
+      .then(setChats)
+      .catch(() => { /* chats endpoint may not exist yet */ })
       .finally(() => setLoadingChats(false));
   }, []);
 
