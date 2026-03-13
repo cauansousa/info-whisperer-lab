@@ -87,6 +87,15 @@ export const api = {
   getTenantInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/invitations"),
 
   // ─── Governance service ───
+  getLibraries: () => apiFetch<Library[]>(GOVERNANCE_BASE, "/libraries"),
+  createLibrary: (name: string, description?: string) =>
+    apiFetch<Library>(GOVERNANCE_BASE, "/libraries", {
+      method: "POST", body: JSON.stringify({ name, description }),
+    }),
+  getLibrary: (id: string) => apiFetch<Library>(GOVERNANCE_BASE, `/libraries/${id}`),
+  deleteLibrary: (id: string) =>
+    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/libraries/${id}`, { method: "DELETE" }),
+
   getLibraryPermissions: (id: string) =>
     apiFetch<Permission[]>(GOVERNANCE_BASE, `/library-permissions/${id}`),
   addLibraryPermission: (id: string, subject_type: string, subject_id: string, access_level: string) =>

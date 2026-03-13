@@ -13,7 +13,7 @@ import {
 
 export default function Libraries() {
   const navigate = useNavigate();
-  const [libraries, setLibraries] = useState<string[]>([]);
+  const [libraries, setLibraries] = useState<Library[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState(false);
@@ -21,8 +21,8 @@ export default function Libraries() {
   const [desc, setDesc] = useState("");
 
   useEffect(() => {
-    api.getAllowedLibraries()
-      .then((res) => setLibraries(res.library_ids))
+    api.getLibraries()
+      .then((res) => setLibraries(res))
       .catch(() => toast.error("Failed to load libraries"))
       .finally(() => setLoading(false));
   }, []);
@@ -31,8 +31,14 @@ export default function Libraries() {
     e.preventDefault();
     setCreating(true);
     try {
-      // TODO: createLibrary endpoint not yet available on backend
-      toast.error("Create library is not yet supported by the backend");
+      const lib = await api.createLibrary(name.trim(), desc.trim() || undefined);
+      setLibraries((prev) => [lib, ...prev]);
+      setOpen(false);
+      setName("");
+      setDesc("");
+      toast.success("Library created");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create library");
     } finally {
       setCreating(false);
     }
@@ -78,14 +84,15 @@ export default function Libraries() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {libraries.map((libId) => (
+          {libraries.map((lib) => (
             <div
-              key={libId}
-              onClick={() => navigate(`/admin/libraries/${libId}`)}
+              key={lib.id}
+              onClick={() => navigate(`/admin/libraries/${lib.id}`)}
               className="cursor-pointer rounded-xl border border-border/30 bg-card/50 p-5 transition-colors hover:border-border/60 hover:bg-card/80"
             >
-              <h3 className="font-medium text-sm">{libId.slice(0, 8)}…</h3>
-              <p className="mt-1 text-xs text-muted-foreground">Click to view details</p>
+              <h3 className="font-medium text-sm">{lib.name}</h3>
+              {lib.description && <p className="mt-1 text-xs text-muted-foreground">{lib.description}</p>}
+              <p className="mt-2 text-[10px] text-muted-foreground">{new Date(lib.created_at).toLocaleDateString()}</p>
             </div>
           ))}
         </div>
