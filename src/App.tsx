@@ -43,6 +43,7 @@ const App = () => (
               <Route index element={<ChatView />} />
               <Route path="chat/:chatId" element={<ChatConversation />} />
               <Route path="libraries" element={<UserLibraries />} />
+              <Route path="libraries/:libraryId" element={<UserLibraryDetail />} />
               <Route path="agents" element={<UserAgents />} />
             </Route>
 
