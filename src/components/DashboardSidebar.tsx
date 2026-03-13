@@ -37,7 +37,7 @@ export function DashboardSidebar() {
 
   const isActive = (path: string) => {
     if (path === "/app") return location.pathname === "/app" || location.pathname.startsWith("/app/chat");
-    return location.pathname.startsWith(path);
+    return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
   const visibleAdmin = adminItems.filter((item) => hasRole(item.minRole));
