@@ -62,6 +62,7 @@ export interface Library {
   tenant_id: string;
   name: string;
   description?: string;
+  system_prompt?: string;
   created_at: string;
 }
 

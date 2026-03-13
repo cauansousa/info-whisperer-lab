@@ -40,6 +40,7 @@ const defaultForm: AgentForm = {
 interface AllowedLibrary {
   id: string;
   name: string;
+  system_prompt?: string;
 }
 
 export default function UserAgents() {
