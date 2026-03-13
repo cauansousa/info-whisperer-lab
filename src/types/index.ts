@@ -37,6 +37,7 @@ export interface Invitation {
 export interface Agent {
   id: string;
   tenant_id: string;
+  user_id?: string;
   name: string;
   description?: string;
   config?: {

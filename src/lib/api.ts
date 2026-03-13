@@ -88,9 +88,13 @@ export const api = {
 
   // ─── Governance service ───
   getLibraries: () => apiFetch<Library[]>(GOVERNANCE_BASE, "/libraries"),
-  createLibrary: (name: string, description?: string) =>
+  createLibrary: (name: string, description?: string, system_prompt?: string) =>
     apiFetch<Library>(GOVERNANCE_BASE, "/libraries", {
-      method: "POST", body: JSON.stringify({ name, description }),
+      method: "POST", body: JSON.stringify({ name, description, system_prompt }),
+    }),
+  updateLibrary: (id: string, body: { name?: string; description?: string; system_prompt?: string }) =>
+    apiFetch<Library>(GOVERNANCE_BASE, `/libraries/${id}`, {
+      method: "PUT", body: JSON.stringify(body),
     }),
   getLibrary: (id: string) => apiFetch<Library>(GOVERNANCE_BASE, `/libraries/${id}`),
   deleteLibrary: (id: string) =>
