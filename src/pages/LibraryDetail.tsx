@@ -39,13 +39,11 @@ export default function LibraryDetail() {
   useEffect(() => {
     if (!libraryId) return;
     Promise.all([
-      api.getLibrary(libraryId),
       api.getDocuments(libraryId),
       api.getLibraryPermissions(libraryId),
       api.getUsers(),
     ])
-      .then(([lib, docs, perms, u]) => {
-        setLibrary(lib);
+      .then(([docs, perms, u]) => {
         setDocuments(docs);
         setPermissions(perms);
         setUsers(u);
@@ -113,7 +111,7 @@ export default function LibraryDetail() {
 
   return (
     <div className="p-6">
-      <h1 className="font-display text-2xl font-bold mb-6">{library?.name}</h1>
+      <h1 className="font-display text-2xl font-bold mb-6">Library Details</h1>
 
       <Tabs defaultValue="documents">
         <TabsList className="bg-secondary/30">
