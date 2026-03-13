@@ -235,13 +235,21 @@ export default function UserAgents() {
                 </Select>
               </TabsContent>
               <TabsContent value="libraries" className="space-y-2">
-                {allowedLibraries.map((lib) => (
-                  <label key={lib.id} className="flex items-center gap-2 rounded-lg border border-border/20 px-3 py-2 cursor-pointer hover:bg-secondary/20">
-                    <Checkbox checked={form.library_ids.includes(lib.id)} onCheckedChange={() => toggleLib(lib.id)} />
-                    <span className="text-sm">{lib.name}</span>
-                  </label>
-                ))}
                 {allowedLibraries.length === 0 && <p className="text-xs text-muted-foreground">You don't have access to any libraries yet.</p>}
+                {allowedLibraries.map((lib) => (
+                  <div key={lib.id} className="rounded-lg border border-border/20 px-3 py-2 hover:bg-secondary/20 transition-colors">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox checked={form.library_ids.includes(lib.id)} onCheckedChange={() => toggleLib(lib.id)} />
+                      <span className="text-sm font-medium">{lib.name}</span>
+                    </label>
+                    {lib.system_prompt && form.library_ids.includes(lib.id) && (
+                      <div className="mt-2 ml-6 rounded bg-secondary/30 p-2">
+                        <p className="text-[10px] text-muted-foreground mb-1">Library prompt:</p>
+                        <p className="text-xs text-muted-foreground/80 whitespace-pre-wrap">{lib.system_prompt}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </TabsContent>
               <TabsContent value="advanced" className="space-y-4">
                 <div><label className="text-xs text-muted-foreground">Temperature ({form.temperature})</label><input type="range" min={0} max={2} step={0.1} value={form.temperature} onChange={(e) => setForm((p) => ({ ...p, temperature: parseFloat(e.target.value) }))} className="w-full" /></div>
