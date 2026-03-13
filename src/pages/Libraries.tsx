@@ -21,7 +21,7 @@ export default function Libraries() {
   const [desc, setDesc] = useState("");
 
   useEffect(() => {
-    api.getLibraries()
+    api.getAllowedLibraries()
       .then(setLibraries)
       .catch(() => toast.error("Failed to load libraries"))
       .finally(() => setLoading(false));
