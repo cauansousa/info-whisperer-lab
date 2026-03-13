@@ -17,6 +17,8 @@ import {
 
 const mainItems = [
   { title: "Chat", url: "/app", icon: MessageSquare, minRole: "member" as const },
+  { title: "My Libraries", url: "/app/libraries", icon: BookOpen, minRole: "member" as const },
+  { title: "My Agents", url: "/app/agents", icon: Bot, minRole: "member" as const },
 ];
 
 const adminItems = [
@@ -35,7 +37,7 @@ export function DashboardSidebar() {
 
   const isActive = (path: string) => {
     if (path === "/app") return location.pathname === "/app" || location.pathname.startsWith("/app/chat");
-    return location.pathname.startsWith(path);
+    return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
   const visibleAdmin = adminItems.filter((item) => hasRole(item.minRole));

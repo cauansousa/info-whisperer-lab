@@ -16,6 +16,8 @@ import ChatConversation from "./pages/ChatConversation";
 import Libraries from "./pages/Libraries";
 import LibraryDetail from "./pages/LibraryDetail";
 import Agents from "./pages/Agents";
+import UserLibraries from "./pages/UserLibraries";
+import UserAgents from "./pages/UserAgents";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
 import Organization from "./pages/Organization";
@@ -40,6 +42,8 @@ const App = () => (
             <Route path="/app" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route index element={<ChatView />} />
               <Route path="chat/:chatId" element={<ChatConversation />} />
+              <Route path="libraries" element={<UserLibraries />} />
+              <Route path="agents" element={<UserAgents />} />
             </Route>
 
             <Route path="/admin" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
