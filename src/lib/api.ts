@@ -94,7 +94,7 @@ export const api = {
       method: "POST", body: JSON.stringify({ library_id: id, subject_type, subject_id, access_level }),
     }),
   getAllowedLibraries: () =>
-    apiFetch<Library[]>(GOVERNANCE_BASE, "/allowed-libraries"),
+    apiFetch<{ library_ids: string[] }>(GOVERNANCE_BASE, "/allowed-libraries"),
 
   getDocuments: (libraryId: string) =>
     apiFetch<DocType[]>(GOVERNANCE_BASE, `/documents?library_id=${libraryId}`),
