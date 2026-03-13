@@ -48,7 +48,7 @@ export default function Agents() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    Promise.all([api.getAgents(), api.getLibraries(), api.getLLMProviders()])
+    Promise.all([api.getAgents(), api.getAllowedLibraries(), api.getLLMProviders()])
       .then(([a, l, p]) => { setAgents(a); setLibraries(l); setProviders(p); })
       .catch(() => toast.error("Failed to load data"))
       .finally(() => setLoading(false));

@@ -31,14 +31,8 @@ export default function Libraries() {
     e.preventDefault();
     setCreating(true);
     try {
-      const lib = await api.createLibrary(name.trim(), desc.trim() || undefined);
-      setLibraries((prev) => [lib, ...prev]);
-      setOpen(false);
-      setName("");
-      setDesc("");
-      toast.success("Library created");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create library");
+      // TODO: createLibrary endpoint not yet available on backend
+      toast.error("Create library is not yet supported by the backend");
     } finally {
       setCreating(false);
     }
