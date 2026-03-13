@@ -39,7 +39,7 @@ const defaultForm: AgentForm = {
 
 export default function Agents() {
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [libraries, setLibraries] = useState<Library[]>([]);
+  const [libraries, setLibraries] = useState<string[]>([]);
   const [providers, setProviders] = useState<LLMProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -49,7 +49,7 @@ export default function Agents() {
 
   useEffect(() => {
     Promise.all([api.getAgents(), api.getAllowedLibraries(), api.getLLMProviders()])
-      .then(([a, l, p]) => { setAgents(a); setLibraries(l); setProviders(p); })
+      .then(([a, l, p]) => { setAgents(a); setLibraries(l.library_ids); setProviders(p); })
       .catch(() => toast.error("Failed to load data"))
       .finally(() => setLoading(false));
   }, []);

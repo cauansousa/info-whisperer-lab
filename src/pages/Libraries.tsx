@@ -78,15 +78,14 @@ export default function Libraries() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {libraries.map((lib) => (
+          {libraries.map((libId) => (
             <div
-              key={lib.id}
-              onClick={() => navigate(`/admin/libraries/${lib.id}`)}
+              key={libId}
+              onClick={() => navigate(`/admin/libraries/${libId}`)}
               className="cursor-pointer rounded-xl border border-border/30 bg-card/50 p-5 transition-colors hover:border-border/60 hover:bg-card/80"
             >
-              <h3 className="font-medium text-sm">{lib.name}</h3>
-              {lib.description && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{lib.description}</p>}
-              <p className="mt-3 text-[10px] text-muted-foreground">{new Date(lib.created_at).toLocaleDateString()}</p>
+              <h3 className="font-medium text-sm">{libId.slice(0, 8)}…</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Click to view details</p>
             </div>
           ))}
         </div>
