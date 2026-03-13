@@ -19,7 +19,17 @@ interface AuthContextValue extends AuthState {
 
 const hierarchy: Record<Role, number> = { member: 0, manager: 1, admin: 2, owner: 3 };
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+const fallbackAuthContext: AuthContextValue = {
+  session: null,
+  me: null,
+  loading: true,
+  noTenant: false,
+  refresh: async () => {},
+  logout: async () => {},
+  hasRole: () => false,
+};
+
+const AuthContext = createContext<AuthContextValue | null>(fallbackAuthContext);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -79,6 +89,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  return ctx ?? fallbackAuthContext;
 }
