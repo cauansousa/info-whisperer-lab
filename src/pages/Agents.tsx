@@ -39,7 +39,7 @@ const defaultForm: AgentForm = {
 
 export default function Agents() {
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [libraries, setLibraries] = useState<Library[]>([]);
+  const [libraries, setLibraries] = useState<string[]>([]);
   const [providers, setProviders] = useState<LLMProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -49,7 +49,7 @@ export default function Agents() {
 
   useEffect(() => {
     Promise.all([api.getAgents(), api.getAllowedLibraries(), api.getLLMProviders()])
-      .then(([a, l, p]) => { setAgents(a); setLibraries(l); setProviders(p); })
+      .then(([a, l, p]) => { setAgents(a); setLibraries(l.library_ids); setProviders(p); })
       .catch(() => toast.error("Failed to load data"))
       .finally(() => setLoading(false));
   }, []);
@@ -209,10 +209,10 @@ export default function Agents() {
                 </Select>
               </TabsContent>
               <TabsContent value="libraries" className="space-y-2">
-                {libraries.map((lib) => (
-                  <label key={lib.id} className="flex items-center gap-2 rounded-lg border border-border/20 px-3 py-2 cursor-pointer hover:bg-secondary/20">
-                    <Checkbox checked={form.library_ids.includes(lib.id)} onCheckedChange={() => toggleLib(lib.id)} />
-                    <span className="text-sm">{lib.name}</span>
+                {libraries.map((libId) => (
+                  <label key={libId} className="flex items-center gap-2 rounded-lg border border-border/20 px-3 py-2 cursor-pointer hover:bg-secondary/20">
+                    <Checkbox checked={form.library_ids.includes(libId)} onCheckedChange={() => toggleLib(libId)} />
+                    <span className="text-sm">{libId.slice(0, 8)}…</span>
                   </label>
                 ))}
                 {libraries.length === 0 && <p className="text-xs text-muted-foreground">No libraries available.</p>}
