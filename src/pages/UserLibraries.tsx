@@ -50,8 +50,15 @@ export default function UserLibraries() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {libraries.map((lib) => (
-            <div key={lib.id} className="rounded-xl border border-border/30 bg-card/50 p-5">
-              <h3 className="font-medium text-sm">{lib.name}</h3>
+            <div
+              key={lib.id}
+              onClick={() => navigate(`/app/libraries/${lib.id}`)}
+              className="rounded-xl border border-border/30 bg-card/50 p-5 cursor-pointer hover:border-primary/40 hover:bg-card/80 transition-colors group"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium text-sm">{lib.name}</h3>
+                <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
               {lib.description && (
                 <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{lib.description}</p>
               )}
