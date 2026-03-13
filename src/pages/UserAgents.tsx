@@ -65,7 +65,7 @@ export default function UserAgents() {
       const details = await Promise.all(
         libs.library_ids.map((id: string) =>
           api.getLibrary(id)
-            .then((l) => ({ id: l.id, name: l.name }))
+            .then((l) => ({ id: l.id, name: l.name, system_prompt: l.system_prompt }))
             .catch(() => ({ id, name: id.slice(0, 8) + "…" }))
         )
       );
