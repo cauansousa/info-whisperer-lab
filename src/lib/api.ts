@@ -115,7 +115,7 @@ export const api = {
     }),
   updateAgent: (id: string, body: Record<string, unknown>) =>
     apiFetch<Agent>(GOVERNANCE_BASE, `/agents/${id}`, {
-      method: "PUT", body: JSON.stringify(body),
+      method: "PATCH", body: JSON.stringify(body),
     }),
   deleteAgent: (id: string) =>
     apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/agents/${id}`, { method: "DELETE" }),
