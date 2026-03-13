@@ -94,16 +94,7 @@ export const api = {
       method: "POST", body: JSON.stringify({ library_id: id, subject_type, subject_id, access_level }),
     }),
   getAllowedLibraries: () =>
-    apiFetch<{ library_ids: string[] }>(GOVERNANCE_BASE, "/allowed-libraries"),
-
-  getLibraries: () => apiFetch<Library[]>(GOVERNANCE_BASE, "/libraries"),
-  getLibrary: (id: string) => apiFetch<Library>(GOVERNANCE_BASE, `/libraries/${id}`),
-  createLibrary: (name: string, description?: string) =>
-    apiFetch<Library>(GOVERNANCE_BASE, "/libraries", {
-      method: "POST", body: JSON.stringify({ name, description }),
-    }),
-  deleteLibrary: (id: string) =>
-    apiFetch<{ ok: true }>(GOVERNANCE_BASE, `/libraries/${id}`, { method: "DELETE" }),
+    apiFetch<Library[]>(GOVERNANCE_BASE, "/allowed-libraries"),
 
   getDocuments: (libraryId: string) =>
     apiFetch<DocType[]>(GOVERNANCE_BASE, `/documents?library_id=${libraryId}`),
