@@ -16,6 +16,8 @@ import ChatConversation from "./pages/ChatConversation";
 import Libraries from "./pages/Libraries";
 import LibraryDetail from "./pages/LibraryDetail";
 import Agents from "./pages/Agents";
+import UserLibraries from "./pages/UserLibraries";
+import UserAgents from "./pages/UserAgents";
 import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
 import Organization from "./pages/Organization";
