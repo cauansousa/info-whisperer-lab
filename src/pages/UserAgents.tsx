@@ -225,8 +225,8 @@ export default function UserAgents() {
               <TabsContent value="basic" className="space-y-3">
                 <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Agent name" required />
                 <Input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description (optional)" />
-                <textarea value={form.system_prompt} onChange={(e) => setForm((p) => ({ ...p, system_prompt: e.target.value }))} placeholder="System prompt (optional)" className="w-full rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm min-h-[80px] focus:outline-none focus:border-foreground/30 placeholder:text-muted-foreground/50" />
-                <Input value={form.tone} onChange={(e) => setForm((p) => ({ ...p, tone: e.target.value }))} placeholder="Tone (e.g., formal, casual)" />
+                <textarea value={form.system_prompt} onChange={(e) => setForm((p) => ({ ...p, system_prompt: e.target.value }))} placeholder="Your additional instructions (will be combined with library prompts)" className="w-full rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm min-h-[80px] focus:outline-none focus:border-foreground/30 placeholder:text-muted-foreground/50" />
+                <p className="text-[11px] text-muted-foreground/60">This prompt will be concatenated with the prompts defined in the selected libraries.</p>
               </TabsContent>
               <TabsContent value="model" className="space-y-3">
                 <Select value={form.model_provider_id} onValueChange={(v) => setForm((p) => ({ ...p, model_provider_id: v }))}>
