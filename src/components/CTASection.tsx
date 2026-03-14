@@ -68,7 +68,7 @@ const CTASection = () => {
   ];
 
   return (
-    <section id="solicitar-acesso" className="relative py-16 sm:py-32">
+    <section id="contato" className="relative py-16 sm:py-32">
       <div className="container mx-auto max-w-2xl px-4 sm:px-6">
         <motion.div
           ref={ref}
