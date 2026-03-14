@@ -220,6 +220,8 @@ export default function LibraryDetail() {
               Salvar prompt
             </Button>
           </div>
+        </TabsContent>
+
         <TabsContent value="integrations" className="mt-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {["Google Drive", "Notion", "Confluence", "SharePoint"].map((name) => (
