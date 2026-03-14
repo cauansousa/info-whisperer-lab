@@ -132,11 +132,16 @@ export default function LibraryDetail() {
 
   return (
     <div className="p-6">
-      <h1 className="font-display text-2xl font-bold mb-6">Library Details</h1>
+      <h1 className="font-display text-2xl font-bold mb-1">{library?.name || "Library Details"}</h1>
+      {library?.description && (
+        <p className="text-sm text-muted-foreground mb-6">{library.description}</p>
+      )}
+      {!library?.description && <div className="mb-6" />}
 
       <Tabs defaultValue="documents">
         <TabsList className="bg-secondary/30">
           <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
         </TabsList>
