@@ -104,6 +104,20 @@ export default function LibraryDetail() {
     }
   };
 
+  const handleSavePrompt = async () => {
+    if (!libraryId) return;
+    setSavingPrompt(true);
+    try {
+      const updated = await api.updateLibrary(libraryId, { system_prompt: systemPrompt });
+      setLibrary(updated);
+      toast.success("System prompt saved");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save prompt");
+    } finally {
+      setSavingPrompt(false);
+    }
+  };
+
   const filteredUsers = users.filter((u) =>
     userSearch.length >= 2 && u.email.toLowerCase().includes(userSearch.toLowerCase())
   ).slice(0, 6);
