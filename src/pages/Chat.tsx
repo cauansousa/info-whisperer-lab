@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
+import { streamQuery } from "@/lib/stream-query";
 import type { Chat, Agent, ChatMessage, SourceItem } from "@/types";
 import type { CanvasDocument } from "@/components/chat/CanvasPanel";
-import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen } from "lucide-react";
+import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -35,6 +36,8 @@ export default function ChatView({ chatId }: ChatViewProps) {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [canvasDoc, setCanvasDoc] = useState<CanvasDocument | null>(null);
   const messagesEnd = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const streamContentRef = useRef("");
 
   const scrollToBottom = useCallback(() => {
     messagesEnd.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,11 +69,18 @@ export default function ChatView({ chatId }: ChatViewProps) {
     if (doc) setCanvasDoc(doc);
   };
 
+  const handleStop = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setSending(false);
+  };
+
   const handleSend = async () => {
     if (!input.trim() || sending) return;
     const question = input.trim();
     setInput("");
     setSending(true);
+    streamContentRef.current = "";
 
     const tempMsg: ChatMessage = {
       id: `temp-${Date.now()}`,
@@ -82,39 +92,73 @@ export default function ChatView({ chatId }: ChatViewProps) {
     };
     setMessages((prev) => [...prev, tempMsg]);
 
-    try {
-      const res = await api.query({
+    const agentMsgId = `agent-${Date.now()}`;
+    let receivedChatId = chatId || "";
+
+    // Add empty agent message that will be filled by streaming
+    const agentMsg: ChatMessage = {
+      id: agentMsgId,
+      chat_id: receivedChatId,
+      tenant_id: "",
+      sender_type: "agent",
+      content: "",
+      created_at: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, agentMsg]);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    await streamQuery(
+      {
         question,
         agent_id: selectedAgent || undefined,
         chat_id: chatId || undefined,
-      });
-
-      const agentMsg: ChatMessage = {
-        id: `agent-${Date.now()}`,
-        chat_id: res.chat_id,
-        tenant_id: "",
-        sender_type: "agent",
-        content: res.answer,
-        created_at: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, agentMsg]);
-      if (res.sources?.length) {
-        setSources((prev) => ({ ...prev, [agentMsg.id]: res.sources }));
-      }
-
-      // Auto-open canvas if response contains structured content
-      const doc = parseCanvasContent(agentMsg.id, res.answer);
-      if (doc) setCanvasDoc(doc);
-
-      if (!chatId) {
-        navigate(`/app/chat/${res.chat_id}`, { replace: true });
-        api.getChats().then(setChats);
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send message");
-    } finally {
-      setSending(false);
-    }
+      },
+      {
+        onToken: (token) => {
+          streamContentRef.current += token;
+          const currentContent = streamContentRef.current;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === agentMsgId ? { ...m, content: currentContent } : m
+            )
+          );
+        },
+        onChatId: (id) => {
+          receivedChatId = id;
+          if (!chatId) {
+            navigate(`/app/chat/${id}`, { replace: true });
+            api.getChats().then(setChats);
+          }
+        },
+        onSources: (srcs) => {
+          if (srcs?.length) {
+            setSources((prev) => ({ ...prev, [agentMsgId]: srcs }));
+          }
+        },
+        onDone: () => {
+          setSending(false);
+          abortRef.current = null;
+          // Auto-open canvas if response contains structured content
+          const finalContent = streamContentRef.current;
+          if (finalContent) {
+            const doc = parseCanvasContent(agentMsgId, finalContent);
+            if (doc) setCanvasDoc(doc);
+          }
+        },
+        onError: (err) => {
+          toast.error(err || "Failed to send message");
+          setSending(false);
+          abortRef.current = null;
+          // Remove the empty agent message on error
+          if (!streamContentRef.current) {
+            setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+          }
+        },
+      },
+      controller.signal
+    );
   };
 
   const deleteChat = async (id: string) => {
@@ -206,7 +250,20 @@ export default function ChatView({ chatId }: ChatViewProps) {
             messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender_type === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[70%] rounded-xl px-4 py-3 text-sm ${msg.sender_type === "user" ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-foreground"}`}>
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  {/* Show streaming cursor for empty agent messages */}
+                  {msg.sender_type === "agent" && msg.content === "" && sending ? (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse [animation-delay:0.2s]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse [animation-delay:0.4s]" />
+                    </span>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                  )}
+                  {/* Blinking cursor while streaming */}
+                  {msg.sender_type === "agent" && sending && msg.content !== "" && msg.id.startsWith("agent-") && (
+                    <span className="inline-block w-0.5 h-4 bg-foreground/60 animate-pulse ml-0.5 align-text-bottom" />
+                  )}
                   {sources[msg.id] && (
                     <div className="mt-2 border-t border-border/20 pt-2">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Sources</p>
@@ -215,8 +272,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
                       ))}
                     </div>
                   )}
-                  {/* Canvas button for agent messages with structured content */}
-                  {msg.sender_type === "agent" && hasCanvasContent(msg.content) && (
+                  {msg.sender_type === "agent" && !sending && hasCanvasContent(msg.content) && (
                     <button
                       onClick={() => openInCanvas(msg.id, msg.content)}
                       className="mt-2 flex items-center gap-1.5 rounded-md border border-border/30 bg-secondary/30 px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
@@ -243,9 +299,15 @@ export default function ChatView({ chatId }: ChatViewProps) {
               rows={1}
               className="flex-1 resize-none rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none"
             />
-            <Button onClick={handleSend} disabled={sending || !input.trim()} size="icon" className="h-10 w-10">
-              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
+            {sending ? (
+              <Button onClick={handleStop} variant="destructive" size="icon" className="h-10 w-10">
+                <Square className="h-3.5 w-3.5" />
+              </Button>
+            ) : (
+              <Button onClick={handleSend} disabled={!input.trim()} size="icon" className="h-10 w-10">
+                <Send className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
