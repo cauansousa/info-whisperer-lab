@@ -2,28 +2,21 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import type { Chat, Agent, ChatMessage, SourceItem } from "@/types";
-import { Plus, Trash2, Send, Loader2, MessageSquare, Bot } from "lucide-react";
+import type { CanvasDocument } from "@/components/chat/CanvasPanel";
+import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import CanvasPanel from "@/components/chat/CanvasPanel";
+import { parseCanvasContent } from "@/lib/canvas-parser";
 
 interface ChatViewProps {
   chatId?: string;
@@ -40,6 +33,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
   const [sending, setSending] = useState(false);
   const [loadingChats, setLoadingChats] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [canvasDoc, setCanvasDoc] = useState<CanvasDocument | null>(null);
   const messagesEnd = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
@@ -52,7 +46,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
       .catch(() => toast.error("Failed to load agents"));
     api.getChats()
       .then(setChats)
-      .catch(() => { /* chats endpoint may not exist yet */ })
+      .catch(() => {})
       .finally(() => setLoadingChats(false));
   }, []);
 
@@ -67,13 +61,17 @@ export default function ChatView({ chatId }: ChatViewProps) {
 
   useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
+  const openInCanvas = (msgId: string, content: string) => {
+    const doc = parseCanvasContent(msgId, content);
+    if (doc) setCanvasDoc(doc);
+  };
+
   const handleSend = async () => {
     if (!input.trim() || sending) return;
     const question = input.trim();
     setInput("");
     setSending(true);
 
-    // Optimistic user message
     const tempMsg: ChatMessage = {
       id: `temp-${Date.now()}`,
       chat_id: chatId || "",
@@ -104,10 +102,12 @@ export default function ChatView({ chatId }: ChatViewProps) {
         setSources((prev) => ({ ...prev, [agentMsg.id]: res.sources }));
       }
 
-      // Navigate to the chat if this was a new conversation
+      // Auto-open canvas if response contains structured content
+      const doc = parseCanvasContent(agentMsg.id, res.answer);
+      if (doc) setCanvasDoc(doc);
+
       if (!chatId) {
         navigate(`/app/chat/${res.chat_id}`, { replace: true });
-        // Refresh chat list
         api.getChats().then(setChats);
       }
     } catch (err: any) {
@@ -125,6 +125,8 @@ export default function ChatView({ chatId }: ChatViewProps) {
       toast.success("Chat deleted");
     } catch { toast.error("Failed to delete chat"); }
   };
+
+  const hasCanvasContent = (content: string) => parseCanvasContent("test", content) !== null;
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
@@ -213,6 +215,16 @@ export default function ChatView({ chatId }: ChatViewProps) {
                       ))}
                     </div>
                   )}
+                  {/* Canvas button for agent messages with structured content */}
+                  {msg.sender_type === "agent" && hasCanvasContent(msg.content) && (
+                    <button
+                      onClick={() => openInCanvas(msg.id, msg.content)}
+                      className="mt-2 flex items-center gap-1.5 rounded-md border border-border/30 bg-secondary/30 px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+                    >
+                      <PanelRightOpen className="h-3 w-3" />
+                      Open in Canvas
+                    </button>
+                  )}
                 </div>
               </div>
             ))
@@ -237,6 +249,11 @@ export default function ChatView({ chatId }: ChatViewProps) {
           </div>
         </div>
       </div>
+
+      {/* Canvas Panel */}
+      {canvasDoc && (
+        <CanvasPanel document={canvasDoc} onClose={() => setCanvasDoc(null)} />
+      )}
     </div>
   );
 }
