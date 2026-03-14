@@ -9,7 +9,6 @@ interface Props {
 export default function ChatMarkdown({ content }: Props) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
       components={{
         h1: ({ children }) => <h1 className="text-base font-bold text-foreground mb-2 mt-3 first:mt-0">{children}</h1>,
         h2: ({ children }) => <h2 className="text-sm font-semibold text-foreground mb-1.5 mt-2.5 first:mt-0">{children}</h2>,
