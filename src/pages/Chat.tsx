@@ -17,6 +17,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import CanvasPanel from "@/components/chat/CanvasPanel";
+import ChatMarkdown from "@/components/chat/ChatMarkdown";
 import { parseCanvasContent } from "@/lib/canvas-parser";
 
 interface ChatViewProps {
