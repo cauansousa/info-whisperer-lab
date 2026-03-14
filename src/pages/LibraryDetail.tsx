@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import type { Library, Document as DocType, Permission, Profile } from "@/types";
-import { Upload, FileText, Loader2, Shield, Puzzle } from "lucide-react";
+import { Upload, FileText, Loader2, Shield, Puzzle, Settings, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,15 +37,20 @@ export default function LibraryDetail() {
   const [addingPerm, setAddingPerm] = useState(false);
   const [users, setUsers] = useState<Profile[]>([]);
   const [userSearch, setUserSearch] = useState("");
+  const [systemPrompt, setSystemPrompt] = useState("");
+  const [savingPrompt, setSavingPrompt] = useState(false);
 
   useEffect(() => {
     if (!libraryId) return;
     Promise.all([
+      api.getLibrary(libraryId),
       api.getDocuments(libraryId),
       api.getLibraryPermissions(libraryId),
       api.getUsers(),
     ])
-      .then(([docs, perms, u]) => {
+      .then(([lib, docs, perms, u]) => {
+        setLibrary(lib);
+        setSystemPrompt(lib.system_prompt || "");
         setDocuments(docs);
         setPermissions(perms);
         setUsers(u);
@@ -97,6 +104,20 @@ export default function LibraryDetail() {
     }
   };
 
+  const handleSavePrompt = async () => {
+    if (!libraryId) return;
+    setSavingPrompt(true);
+    try {
+      const updated = await api.updateLibrary(libraryId, { system_prompt: systemPrompt });
+      setLibrary(updated);
+      toast.success("System prompt saved");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save prompt");
+    } finally {
+      setSavingPrompt(false);
+    }
+  };
+
   const filteredUsers = users.filter((u) =>
     userSearch.length >= 2 && u.email.toLowerCase().includes(userSearch.toLowerCase())
   ).slice(0, 6);
@@ -111,11 +132,16 @@ export default function LibraryDetail() {
 
   return (
     <div className="p-6">
-      <h1 className="font-display text-2xl font-bold mb-6">Library Details</h1>
+      <h1 className="font-display text-2xl font-bold mb-1">{library?.name || "Library Details"}</h1>
+      {library?.description && (
+        <p className="text-sm text-muted-foreground mb-6">{library.description}</p>
+      )}
+      {!library?.description && <div className="mb-6" />}
 
       <Tabs defaultValue="documents">
         <TabsList className="bg-secondary/30">
           <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
         </TabsList>
@@ -169,6 +195,31 @@ export default function LibraryDetail() {
               </table>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-6">
+          <div className="max-w-2xl space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="system-prompt" className="text-sm font-medium">
+                System Prompt
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Define o prompt base que será usado por todos os agentes que utilizarem esta biblioteca. 
+                Este prompt é concatenado com o prompt pessoal de cada agente.
+              </p>
+              <Textarea
+                id="system-prompt"
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.target.value)}
+                placeholder="Ex: Você é um assistente especializado em documentos corporativos. Responda sempre em português, de forma clara e objetiva..."
+                className="min-h-[200px] bg-secondary/20 border-border/40 font-mono text-xs"
+              />
+            </div>
+            <Button onClick={handleSavePrompt} disabled={savingPrompt} size="sm">
+              {savingPrompt ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+              Salvar prompt
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="integrations" className="mt-6">
