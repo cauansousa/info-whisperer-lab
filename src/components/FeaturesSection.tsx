@@ -76,7 +76,7 @@ const FeaturesSection = () => {
   const titleInView = useInView(titleRef, { once: true, margin: "-80px" });
 
   return (
-    <section id="features" className="relative py-16 sm:py-32">
+    <section id="funcionalidades" className="relative py-16 sm:py-32">
       <div className="container mx-auto max-w-6xl px-4 sm:px-6">
         <motion.div
           ref={titleRef}

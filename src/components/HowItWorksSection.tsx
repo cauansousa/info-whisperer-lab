@@ -31,7 +31,7 @@ const HowItWorksSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="how-it-works" className="relative overflow-hidden py-16 sm:py-32">
+    <section id="como-funciona" className="relative overflow-hidden py-16 sm:py-32">
       {/* Background grid */}
       <div className="absolute inset-0 grid-bg radial-fade opacity-40" />
 
