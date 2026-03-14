@@ -37,6 +37,8 @@ export default function LibraryDetail() {
   const [addingPerm, setAddingPerm] = useState(false);
   const [users, setUsers] = useState<Profile[]>([]);
   const [userSearch, setUserSearch] = useState("");
+  const [systemPrompt, setSystemPrompt] = useState("");
+  const [savingPrompt, setSavingPrompt] = useState(false);
 
   useEffect(() => {
     if (!libraryId) return;
