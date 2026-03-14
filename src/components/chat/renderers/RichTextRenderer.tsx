@@ -1,5 +1,4 @@
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 interface Props {
   content: string;
@@ -10,7 +9,6 @@ export default function RichTextRenderer({ content }: Props) {
     <div className="rounded-lg border border-border/30 bg-secondary/10 p-6">
       <div className="prose prose-invert max-w-none">
         <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
           components={{
             h1: ({ children }) => (
               <h1 className="text-2xl font-bold text-foreground mb-4 pb-2 border-b border-border/20">{children}</h1>
