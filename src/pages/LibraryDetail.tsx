@@ -197,6 +197,29 @@ export default function LibraryDetail() {
           )}
         </TabsContent>
 
+        <TabsContent value="settings" className="mt-6">
+          <div className="max-w-2xl space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="system-prompt" className="text-sm font-medium">
+                System Prompt
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Define o prompt base que será usado por todos os agentes que utilizarem esta biblioteca. 
+                Este prompt é concatenado com o prompt pessoal de cada agente.
+              </p>
+              <Textarea
+                id="system-prompt"
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.target.value)}
+                placeholder="Ex: Você é um assistente especializado em documentos corporativos. Responda sempre em português, de forma clara e objetiva..."
+                className="min-h-[200px] bg-secondary/20 border-border/40 font-mono text-xs"
+              />
+            </div>
+            <Button onClick={handleSavePrompt} disabled={savingPrompt} size="sm">
+              {savingPrompt ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+              Salvar prompt
+            </Button>
+          </div>
         <TabsContent value="integrations" className="mt-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {["Google Drive", "Notion", "Confluence", "SharePoint"].map((name) => (
