@@ -258,6 +258,8 @@ export default function ChatView({ chatId }: ChatViewProps) {
                       <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse [animation-delay:0.2s]" />
                       <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse [animation-delay:0.4s]" />
                     </span>
+                  ) : msg.sender_type === "agent" ? (
+                    <ChatMarkdown content={msg.content} />
                   ) : (
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   )}
