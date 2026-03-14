@@ -43,11 +43,14 @@ export default function LibraryDetail() {
   useEffect(() => {
     if (!libraryId) return;
     Promise.all([
+      api.getLibrary(libraryId),
       api.getDocuments(libraryId),
       api.getLibraryPermissions(libraryId),
       api.getUsers(),
     ])
-      .then(([docs, perms, u]) => {
+      .then(([lib, docs, perms, u]) => {
+        setLibrary(lib);
+        setSystemPrompt(lib.system_prompt || "");
         setDocuments(docs);
         setPermissions(perms);
         setUsers(u);
