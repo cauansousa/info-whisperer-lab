@@ -1,5 +1,6 @@
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 
 export function exportAsXlsx(csvContent: string, title: string) {
   const rows = csvContent.trim().split("\n").map((line) => {
@@ -23,17 +24,39 @@ export function exportAsXlsx(csvContent: string, title: string) {
   saveAs(new Blob([buf], { type: "application/octet-stream" }), `${title}.xlsx`);
 }
 
-export function exportAsDocx(content: string, title: string) {
-  // Export as HTML file (simple approach without complex docx lib)
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
-<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;color:#333}
-h1{font-size:24px;border-bottom:2px solid #eee;padding-bottom:8px}
-h2{font-size:20px;margin-top:24px}h3{font-size:16px}
-p{line-height:1.6}table{border-collapse:collapse;width:100%}
-th,td{border:1px solid #ddd;padding:8px;text-align:left}
-th{background:#f5f5f5}blockquote{border-left:3px solid #ccc;padding-left:12px;color:#666}</style>
-</head><body>${content}</body></html>`;
-  saveAs(new Blob([html], { type: "application/msword" }), `${title}.doc`);
+export async function exportAsDocx(content: string, title: string) {
+  const lines = content.split("\n");
+  const children: Paragraph[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("### ")) {
+      children.push(new Paragraph({ text: trimmed.slice(4), heading: HeadingLevel.HEADING_3 }));
+    } else if (trimmed.startsWith("## ")) {
+      children.push(new Paragraph({ text: trimmed.slice(3), heading: HeadingLevel.HEADING_2 }));
+    } else if (trimmed.startsWith("# ")) {
+      children.push(new Paragraph({ text: trimmed.slice(2), heading: HeadingLevel.HEADING_1 }));
+    } else if (trimmed === "") {
+      children.push(new Paragraph({ text: "" }));
+    } else {
+      // Handle bold (**text**) and normal text
+      const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
+      const runs = parts.map((part) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return new TextRun({ text: part.slice(2, -2), bold: true });
+        }
+        return new TextRun({ text: part });
+      });
+      children.push(new Paragraph({ children: runs }));
+    }
+  }
+
+  const doc = new Document({
+    sections: [{ properties: {}, children }],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, `${title}.docx`);
 }
 
 export function exportAsMarkdown(content: string, title: string) {

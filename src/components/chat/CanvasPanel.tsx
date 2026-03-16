@@ -32,13 +32,13 @@ export default function CanvasPanel({ document, onClose }: CanvasPanelProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     switch (document.type) {
       case "spreadsheet":
         exportAsXlsx(document.content, document.title);
         break;
       case "richtext":
-        exportAsDocx(document.content, document.title);
+        await exportAsDocx(document.content, document.title);
         break;
       case "markdown":
         exportAsMarkdown(document.content, document.title);
