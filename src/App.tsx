@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import SuperAdminRoute from "@/components/SuperAdminRoute";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -23,6 +24,7 @@ import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
 import Organization from "./pages/Organization";
 import AIConfig from "./pages/AIConfig";
+import Signup from "./pages/Signup";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,7 @@ const App = () => (
               <Route path="groups/:groupId" element={<GroupDetail />} />
               <Route path="organization" element={<Organization />} />
               <Route path="ai-config" element={<AIConfig />} />
+              <Route path="signup" element={<SuperAdminRoute><Signup /></SuperAdminRoute>} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
