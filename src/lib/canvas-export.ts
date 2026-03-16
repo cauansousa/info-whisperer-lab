@@ -69,6 +69,17 @@ export async function exportAsDocx(content: string, title: string) {
   }
 
   const doc = new Document({
+    numbering: {
+      config: [{
+        reference: "default-numbering",
+        levels: [{
+          level: 0,
+          format: "decimal" as any,
+          text: "%1.",
+          alignment: "start" as any,
+        }],
+      }],
+    },
     sections: [{ properties: {}, children }],
   });
 
