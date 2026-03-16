@@ -25,6 +25,16 @@ export function exportAsXlsx(csvContent: string, title: string) {
 }
 
 export async function exportAsDocx(content: string, title: string) {
+  const parseBoldRuns = (text: string): TextRun[] => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return new TextRun({ text: part.slice(2, -2), bold: true });
+      }
+      return new TextRun({ text: part });
+    });
+  };
+
   const lines = content.split("\n");
   const children: Paragraph[] = [];
 
