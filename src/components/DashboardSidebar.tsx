@@ -92,6 +92,24 @@ export function DashboardSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
+        {isSuperAdmin && (
+          <SidebarGroup>
+            {!collapsed && <SidebarGroupLabel className="text-[10px] uppercase tracking-widest">Super Admin</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/admin/signup")}>
+                    <NavLink to="/admin/signup" className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Create User</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );
