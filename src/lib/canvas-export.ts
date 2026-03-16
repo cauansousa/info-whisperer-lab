@@ -38,15 +38,22 @@ export async function exportAsDocx(content: string, title: string) {
       children.push(new Paragraph({ text: trimmed.slice(2), heading: HeadingLevel.HEADING_1 }));
     } else if (trimmed === "") {
       children.push(new Paragraph({ text: "" }));
+    } else if (/^[-*+]\s+/.test(trimmed)) {
+      const text = trimmed.replace(/^[-*+]\s+/, "");
+      const runs = parseBoldRuns(text);
+      children.push(new Paragraph({
+        children: runs,
+        bullet: { level: 0 },
+      }));
+    } else if (/^\d+\.\s+/.test(trimmed)) {
+      const text = trimmed.replace(/^\d+\.\s+/, "");
+      const runs = parseBoldRuns(text);
+      children.push(new Paragraph({
+        children: runs,
+        numbering: { reference: "default-numbering", level: 0 },
+      }));
     } else {
-      // Handle bold (**text**) and normal text
-      const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
-      const runs = parts.map((part) => {
-        if (part.startsWith("**") && part.endsWith("**")) {
-          return new TextRun({ text: part.slice(2, -2), bold: true });
-        }
-        return new TextRun({ text: part });
-      });
+      const runs = parseBoldRuns(trimmed);
       children.push(new Paragraph({ children: runs }));
     }
   }
