@@ -24,6 +24,7 @@ import Groups from "./pages/Groups";
 import GroupDetail from "./pages/GroupDetail";
 import Organization from "./pages/Organization";
 import AIConfig from "./pages/AIConfig";
+import Signup from "./pages/Signup";
 
 const queryClient = new QueryClient();
 
