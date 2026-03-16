@@ -115,6 +115,16 @@ export async function streamQuery(
           if (parsed.type === "metadata" && parsed.chat_id) {
             callbacks.onChatId?.(parsed.chat_id);
           }
+          if (parsed.type === "done") {
+            if (parsed.chat_id) callbacks.onChatId?.(parsed.chat_id);
+            if (parsed.sources?.length) callbacks.onSources?.(parsed.sources);
+            callbacks.onDone();
+            return;
+          }
+          if (parsed.type === "error") {
+            callbacks.onError(parsed.detail || "Stream error");
+            return;
+          }
 
           // Format 3: Direct fields
           if (parsed.token) callbacks.onToken(parsed.token);
