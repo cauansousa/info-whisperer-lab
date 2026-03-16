@@ -29,11 +29,14 @@ const adminItems = [
   { title: "AI Config", url: "/admin/ai-config", icon: Settings, minRole: "owner" as const },
 ];
 
+const SUPER_ADMIN_EMAIL = "cauanvinicius00@gmail.com";
+
 export function DashboardSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { hasRole } = useAuth();
+  const { hasRole, session } = useAuth();
+  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL;
 
   const isActive = (path: string) => {
     if (path === "/app") return location.pathname === "/app" || location.pathname.startsWith("/app/chat");
