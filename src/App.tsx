@@ -58,6 +58,7 @@ const App = () => (
               <Route path="groups/:groupId" element={<GroupDetail />} />
               <Route path="organization" element={<Organization />} />
               <Route path="ai-config" element={<AIConfig />} />
+              <Route path="signup" element={<SuperAdminRoute><Signup /></SuperAdminRoute>} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
