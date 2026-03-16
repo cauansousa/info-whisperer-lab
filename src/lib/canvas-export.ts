@@ -1,6 +1,6 @@
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, BorderStyle } from "docx";
 
 export function exportAsXlsx(csvContent: string, title: string) {
   const rows = csvContent.trim().split("\n").map((line) => {
@@ -35,11 +35,67 @@ export async function exportAsDocx(content: string, title: string) {
     });
   };
 
+  const tableBorder = {
+    style: BorderStyle.SINGLE,
+    size: 1,
+    color: "999999",
+  };
+  const cellBorders = {
+    top: tableBorder,
+    bottom: tableBorder,
+    left: tableBorder,
+    right: tableBorder,
+  };
+
+  const parseTableRows = (rawRows: string[]): (Table | never)[] => {
+    const dataRows = rawRows.filter((r) => !/^\|[\s-:|]+\|$/.test(r.trim()));
+    if (dataRows.length === 0) return [];
+
+    const parseRow = (row: string, bold: boolean) => {
+      const cells = row.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      return new TableRow({
+        children: cells.map(
+          (cell) =>
+            new TableCell({
+              borders: cellBorders,
+              width: { size: Math.floor(9000 / cells.length), type: WidthType.DXA },
+              children: [new Paragraph({ children: bold ? [new TextRun({ text: cell, bold: true })] : parseBoldRuns(cell) })],
+            })
+        ),
+      });
+    };
+
+    const rows: TableRow[] = [];
+    rows.push(parseRow(dataRows[0], true));
+    for (let i = 1; i < dataRows.length; i++) {
+      rows.push(parseRow(dataRows[i], false));
+    }
+
+    return [new Table({ rows, width: { size: 9000, type: WidthType.DXA } })];
+  };
+
   const lines = content.split("\n");
-  const children: Paragraph[] = [];
+  const children: (Paragraph | Table)[] = [];
+  let tableBuffer: string[] = [];
+
+  const flushTable = () => {
+    if (tableBuffer.length > 0) {
+      children.push(...parseTableRows(tableBuffer));
+      tableBuffer = [];
+    }
+  };
 
   for (const line of lines) {
     const trimmed = line.trim();
+
+    // Detect table rows (lines starting and ending with |)
+    if (/^\|.*\|$/.test(trimmed)) {
+      tableBuffer.push(trimmed);
+      continue;
+    }
+
+    flushTable();
+
     if (trimmed.startsWith("### ")) {
       children.push(new Paragraph({ text: trimmed.slice(4), heading: HeadingLevel.HEADING_3 }));
     } else if (trimmed.startsWith("## ")) {
@@ -51,22 +107,17 @@ export async function exportAsDocx(content: string, title: string) {
     } else if (/^[-*+]\s+/.test(trimmed)) {
       const text = trimmed.replace(/^[-*+]\s+/, "");
       const runs = parseBoldRuns(text);
-      children.push(new Paragraph({
-        children: runs,
-        bullet: { level: 0 },
-      }));
+      children.push(new Paragraph({ children: runs, bullet: { level: 0 } }));
     } else if (/^\d+\.\s+/.test(trimmed)) {
       const text = trimmed.replace(/^\d+\.\s+/, "");
       const runs = parseBoldRuns(text);
-      children.push(new Paragraph({
-        children: runs,
-        numbering: { reference: "default-numbering", level: 0 },
-      }));
+      children.push(new Paragraph({ children: runs, numbering: { reference: "default-numbering", level: 0 } }));
     } else {
-      const runs = parseBoldRuns(trimmed);
-      children.push(new Paragraph({ children: runs }));
+      children.push(new Paragraph({ children: parseBoldRuns(trimmed) }));
     }
   }
+
+  flushTable();
 
   const doc = new Document({
     numbering: {
