@@ -549,6 +549,8 @@ export default function LibraryDetail() {
                 </div>
               ))}
             </div>
+            </>
+            )}
           </div>
         </TabsContent>
 
