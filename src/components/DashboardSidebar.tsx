@@ -1,4 +1,4 @@
-import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings } from "lucide-react";
+import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings, UserPlus } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,11 +29,14 @@ const adminItems = [
   { title: "AI Config", url: "/admin/ai-config", icon: Settings, minRole: "owner" as const },
 ];
 
+const SUPER_ADMIN_EMAIL = "cauanvinicius00@gmail.com";
+
 export function DashboardSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { hasRole } = useAuth();
+  const { hasRole, session } = useAuth();
+  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL;
 
   const isActive = (path: string) => {
     if (path === "/app") return location.pathname === "/app" || location.pathname.startsWith("/app/chat");
@@ -85,6 +88,24 @@ export function DashboardSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {isSuperAdmin && (
+          <SidebarGroup>
+            {!collapsed && <SidebarGroupLabel className="text-[10px] uppercase tracking-widest">Super Admin</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/admin/signup")}>
+                    <NavLink to="/admin/signup" className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      {!collapsed && <span>Create User</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
