@@ -170,6 +170,13 @@ export const api = {
     }),
   disconnectDrive: (connectionId: string) =>
     apiFetchVoid(CONNECTORS_BASE, `/${connectionId}`, { method: "DELETE" }),
+  listDriveFolders: (connectionId: string, parentId?: string) => {
+    const params = new URLSearchParams();
+    if (parentId) params.set("parent_id", parentId);
+    return apiFetch<{ id: string; name: string }[]>(
+      CONNECTORS_BASE, `/${connectionId}/folders?${params}`
+    );
+  },
 
   // ─── Ingestion service ───
   ingestFile: async (file: File, libraryId: string, title: string): Promise<IngestResponse> => {

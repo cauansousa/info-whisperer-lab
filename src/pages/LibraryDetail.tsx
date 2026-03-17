@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import type { Library, Document as DocType, Permission, Profile, DriveConnection } from "@/types";
-import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle, ChevronRight, Home } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,18 +46,18 @@ export default function LibraryDetail() {
   // Integration state
   const [connectingDrive, setConnectingDrive] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
-  const [folderInput, setFolderInput] = useState("");
-  const [editingFolderFor, setEditingFolderFor] = useState<string | null>(null);
+
+  // Folder picker state
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerConnectionId, setPickerConnectionId] = useState<string | null>(null);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerFolders, setPickerFolders] = useState<{ id: string; name: string }[]>([]);
+  const [pickerPath, setPickerPath] = useState<{ id: string; name: string }[]>([
+    { id: "root", name: "My Drive" },
+  ]);
 
   // Default tab: switch to integrations if redirected from OAuth
   const defaultTab = searchParams.get("tab") === "integrations" ? "integrations" : "documents";
-
-  // Show success toast if just connected
-  useEffect(() => {
-    if (searchParams.get("connected") === "true") {
-      toast.success("Google Drive connected! Sync will start shortly.");
-    }
-  }, []);
 
   useEffect(() => {
     if (!libraryId) return;
@@ -143,18 +144,32 @@ export default function LibraryDetail() {
     setConnectingDrive(true);
     try {
       const { auth_url } = await api.getGoogleDriveAuthUrl(libraryId);
-      // Open OAuth in a popup window
       const popup = window.open(auth_url, "google_oauth", "width=600,height=700");
-      // Poll until popup closes, then reload connections
-      const poll = setInterval(async () => {
+
+      // Listen for postMessage from OAuthCallback page
+      const handler = async (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type !== "oauth_drive_connected") return;
+        window.removeEventListener("message", handler);
+        clearInterval(poll);
+        setConnectingDrive(false);
+        if (event.data.error) {
+          toast.error(`OAuth error: ${event.data.error}`);
+        } else {
+          toast.success("Google Drive connected! A sync will start shortly.");
+          const conns = await api.getConnections(libraryId!);
+          setConnections(conns);
+        }
+      };
+      window.addEventListener("message", handler);
+
+      // Fallback poll: if user closes popup without completing OAuth
+      const poll = setInterval(() => {
         if (!popup || popup.closed) {
           clearInterval(poll);
+          window.removeEventListener("message", handler);
           setConnectingDrive(false);
-          // Reload connections
-          if (libraryId) {
-            const conns = await api.getConnections(libraryId);
-            setConnections(conns);
-          }
+          api.getConnections(libraryId!).then(setConnections);
         }
       }, 1000);
     } catch (err: any) {
@@ -162,6 +177,75 @@ export default function LibraryDetail() {
       setConnectingDrive(false);
     }
   };
+
+  // ── Folder picker ──────────────────────────────────────────────────────────
+
+  const openFolderPicker = useCallback(async (connectionId: string) => {
+    setPickerConnectionId(connectionId);
+    setPickerPath([{ id: "root", name: "My Drive" }]);
+    setPickerOpen(true);
+    setPickerLoading(true);
+    try {
+      const folders = await api.listDriveFolders(connectionId);
+      setPickerFolders(folders);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load Drive folders");
+      setPickerOpen(false);
+    } finally {
+      setPickerLoading(false);
+    }
+  }, []);
+
+  const navigateIntoFolder = useCallback(async (folder: { id: string; name: string }) => {
+    if (!pickerConnectionId) return;
+    setPickerLoading(true);
+    setPickerPath((prev) => [...prev, folder]);
+    try {
+      const folders = await api.listDriveFolders(pickerConnectionId, folder.id);
+      setPickerFolders(folders);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load subfolders");
+    } finally {
+      setPickerLoading(false);
+    }
+  }, [pickerConnectionId]);
+
+  const navigateToBreadcrumb = useCallback(async (index: number) => {
+    if (!pickerConnectionId) return;
+    const newPath = pickerPath.slice(0, index + 1);
+    setPickerPath(newPath);
+    setPickerLoading(true);
+    const target = newPath[newPath.length - 1];
+    try {
+      const folders = await api.listDriveFolders(pickerConnectionId, target.id);
+      setPickerFolders(folders);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load folders");
+    } finally {
+      setPickerLoading(false);
+    }
+  }, [pickerConnectionId, pickerPath]);
+
+  const selectCurrentFolder = useCallback(async () => {
+    if (!pickerConnectionId) return;
+    const current = pickerPath[pickerPath.length - 1];
+    if (current.id === "root") {
+      // Selecting root means sync all of My Drive (no folder filter)
+      const updated = await api.updateConnection(pickerConnectionId, {
+        folder_id: undefined,
+        folder_name: undefined,
+      });
+      setConnections((prev) => prev.map((c) => (c.id === pickerConnectionId ? updated : c)));
+    } else {
+      const updated = await api.updateConnection(pickerConnectionId, {
+        folder_id: current.id,
+        folder_name: current.name,
+      });
+      setConnections((prev) => prev.map((c) => (c.id === pickerConnectionId ? updated : c)));
+    }
+    setPickerOpen(false);
+    toast.success("Folder saved — next sync will use this folder");
+  }, [pickerConnectionId, pickerPath]);
 
   const handleSyncNow = async (connectionId: string) => {
     setSyncing(connectionId);
@@ -191,21 +275,6 @@ export default function LibraryDetail() {
       toast.success("Google Drive disconnected");
     } catch (err: any) {
       toast.error(err.message || "Failed to disconnect");
-    }
-  };
-
-  const handleSaveFolder = async (connectionId: string) => {
-    try {
-      const updated = await api.updateConnection(connectionId, {
-        folder_id: folderInput || undefined,
-        folder_name: folderInput ? `Folder ${folderInput.slice(0, 8)}` : undefined,
-      });
-      setConnections((prev) => prev.map((c) => (c.id === connectionId ? updated : c)));
-      setEditingFolderFor(null);
-      setFolderInput("");
-      toast.success("Folder updated — next sync will use the new folder");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update folder");
     }
   };
 
@@ -414,26 +483,16 @@ export default function LibraryDetail() {
                         </div>
                       </div>
 
-                      {/* Folder configuration */}
-                      {editingFolderFor === conn.id ? (
-                        <div className="mt-3 flex gap-2">
-                          <Input
-                            value={folderInput}
-                            onChange={(e) => setFolderInput(e.target.value)}
-                            placeholder="Google Drive folder ID (from URL)"
-                            className="h-8 text-xs bg-secondary/20 border-border/40 flex-1"
-                          />
-                          <Button size="sm" className="h-8 text-xs" onClick={() => handleSaveFolder(conn.id)}>Save</Button>
-                          <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setEditingFolderFor(null)}>Cancel</Button>
-                        </div>
-                      ) : (
-                        <button
-                          className="mt-2 text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
-                          onClick={() => { setEditingFolderFor(conn.id); setFolderInput(conn.folder_id || ""); }}
-                        >
-                          {conn.folder_id ? "Change folder" : "Set specific folder (optional)"}
-                        </button>
-                      )}
+                      {/* Folder picker button */}
+                      <button
+                        className="mt-2 text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline flex items-center gap-1"
+                        onClick={() => openFolderPicker(conn.id)}
+                      >
+                        <FolderOpen className="h-3 w-3" />
+                        {conn.folder_name
+                          ? `Mudar pasta (atual: ${conn.folder_name})`
+                          : "Selecionar pasta do Drive"}
+                      </button>
                     </div>
                   ))}
 
@@ -539,6 +598,77 @@ export default function LibraryDetail() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* ── Folder Picker Modal ── */}
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Selecionar pasta do Google Drive</DialogTitle>
+          </DialogHeader>
+
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1 flex-wrap text-xs text-muted-foreground mb-2">
+            {pickerPath.map((crumb, i) => (
+              <span key={crumb.id} className="flex items-center gap-1">
+                {i === 0 ? (
+                  <button
+                    className="flex items-center gap-0.5 hover:text-foreground"
+                    onClick={() => navigateToBreadcrumb(0)}
+                  >
+                    <Home className="h-3 w-3" />
+                    {crumb.name}
+                  </button>
+                ) : (
+                  <>
+                    <ChevronRight className="h-3 w-3" />
+                    <button
+                      className={`hover:text-foreground ${i === pickerPath.length - 1 ? "text-foreground font-medium" : ""}`}
+                      onClick={() => navigateToBreadcrumb(i)}
+                    >
+                      {crumb.name}
+                    </button>
+                  </>
+                )}
+              </span>
+            ))}
+          </div>
+
+          {/* "Select this folder" button */}
+          <Button
+            size="sm"
+            className="w-full mb-3 text-xs"
+            onClick={selectCurrentFolder}
+          >
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Usar "{pickerPath[pickerPath.length - 1].name}"
+          </Button>
+
+          {/* Folder list */}
+          <div className="max-h-64 overflow-y-auto rounded-lg border border-border/30 divide-y divide-border/20">
+            {pickerLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : pickerFolders.length === 0 ? (
+              <div className="py-6 text-center text-xs text-muted-foreground">
+                Sem subpastas aqui
+              </div>
+            ) : (
+              pickerFolders.map((folder) => (
+                <button
+                  key={folder.id}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-xs hover:bg-secondary/20 text-left"
+                  onClick={() => navigateIntoFolder(folder)}
+                >
+                  <FolderOpen className="h-4 w-4 text-blue-400 shrink-0" />
+                  <span className="flex-1 truncate">{folder.name}</span>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                </button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

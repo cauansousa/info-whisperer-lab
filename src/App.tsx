@@ -25,6 +25,7 @@ import GroupDetail from "./pages/GroupDetail";
 import Organization from "./pages/Organization";
 import AIConfig from "./pages/AIConfig";
 import Signup from "./pages/Signup";
+import OAuthCallback from "./pages/OAuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/invite" element={<Invite />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/oauth-callback" element={<OAuthCallback />} />
 
             {/* Protected dashboard routes */}
             <Route path="/app" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
