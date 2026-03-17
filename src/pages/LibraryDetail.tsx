@@ -27,6 +27,7 @@ export default function LibraryDetail() {
   const [documents, setDocuments] = useState<DocType[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [connections, setConnections] = useState<DriveConnection[]>([]);
+  const [connectorsAvailable, setConnectorsAvailable] = useState(true);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState("");
