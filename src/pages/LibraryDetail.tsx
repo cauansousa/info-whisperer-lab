@@ -67,7 +67,10 @@ export default function LibraryDetail() {
       api.getDocuments(libraryId),
       api.getLibraryPermissions(libraryId),
       api.getUsers(),
-      api.getConnections(libraryId),
+      api.getConnections(libraryId).catch(() => {
+        setConnectorsAvailable(false);
+        return [] as DriveConnection[];
+      }),
     ])
       .then(([lib, docs, perms, u, conns]) => {
         setLibrary(lib);
