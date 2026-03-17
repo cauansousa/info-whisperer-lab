@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
-import type { Library, Document as DocType, Permission, Profile } from "@/types";
-import { Upload, FileText, Loader2, Shield, Puzzle, Settings, Save } from "lucide-react";
+import type { Library, Document as DocType, Permission, Profile, DriveConnection } from "@/types";
+import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,9 +21,11 @@ function formatBytes(bytes: number) {
 
 export default function LibraryDetail() {
   const { libraryId } = useParams<{ libraryId: string }>();
+  const [searchParams] = useSearchParams();
   const [library, setLibrary] = useState<Library | null>(null);
   const [documents, setDocuments] = useState<DocType[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [connections, setConnections] = useState<DriveConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState("");
@@ -40,6 +42,22 @@ export default function LibraryDetail() {
   const [systemPrompt, setSystemPrompt] = useState("");
   const [savingPrompt, setSavingPrompt] = useState(false);
 
+  // Integration state
+  const [connectingDrive, setConnectingDrive] = useState(false);
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [folderInput, setFolderInput] = useState("");
+  const [editingFolderFor, setEditingFolderFor] = useState<string | null>(null);
+
+  // Default tab: switch to integrations if redirected from OAuth
+  const defaultTab = searchParams.get("tab") === "integrations" ? "integrations" : "documents";
+
+  // Show success toast if just connected
+  useEffect(() => {
+    if (searchParams.get("connected") === "true") {
+      toast.success("Google Drive connected! Sync will start shortly.");
+    }
+  }, []);
+
   useEffect(() => {
     if (!libraryId) return;
     Promise.all([
@@ -47,13 +65,15 @@ export default function LibraryDetail() {
       api.getDocuments(libraryId),
       api.getLibraryPermissions(libraryId),
       api.getUsers(),
+      api.getConnections(libraryId),
     ])
-      .then(([lib, docs, perms, u]) => {
+      .then(([lib, docs, perms, u, conns]) => {
         setLibrary(lib);
         setSystemPrompt(lib.system_prompt || "");
         setDocuments(docs);
         setPermissions(perms);
         setUsers(u);
+        setConnections(conns);
       })
       .catch(() => toast.error("Failed to load library"))
       .finally(() => setLoading(false));
@@ -118,6 +138,77 @@ export default function LibraryDetail() {
     }
   };
 
+  const handleConnectDrive = async () => {
+    if (!libraryId) return;
+    setConnectingDrive(true);
+    try {
+      const { auth_url } = await api.getGoogleDriveAuthUrl(libraryId);
+      // Open OAuth in a popup window
+      const popup = window.open(auth_url, "google_oauth", "width=600,height=700");
+      // Poll until popup closes, then reload connections
+      const poll = setInterval(async () => {
+        if (!popup || popup.closed) {
+          clearInterval(poll);
+          setConnectingDrive(false);
+          // Reload connections
+          if (libraryId) {
+            const conns = await api.getConnections(libraryId);
+            setConnections(conns);
+          }
+        }
+      }, 1000);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to initiate Google Drive connection");
+      setConnectingDrive(false);
+    }
+  };
+
+  const handleSyncNow = async (connectionId: string) => {
+    setSyncing(connectionId);
+    try {
+      const result = await api.syncNow(connectionId);
+      toast.success(`Sync complete: ${result.files_added} added, ${result.files_updated} updated, ${result.files_deleted} removed`);
+      if (libraryId) {
+        const [conns, docs] = await Promise.all([
+          api.getConnections(libraryId),
+          api.getDocuments(libraryId),
+        ]);
+        setConnections(conns);
+        setDocuments(docs);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Sync failed");
+    } finally {
+      setSyncing(null);
+    }
+  };
+
+  const handleDisconnect = async (connectionId: string) => {
+    if (!confirm("Disconnect Google Drive? Documents already in the library will be kept.")) return;
+    try {
+      await api.disconnectDrive(connectionId);
+      setConnections((prev) => prev.filter((c) => c.id !== connectionId));
+      toast.success("Google Drive disconnected");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to disconnect");
+    }
+  };
+
+  const handleSaveFolder = async (connectionId: string) => {
+    try {
+      const updated = await api.updateConnection(connectionId, {
+        folder_id: folderInput || undefined,
+        folder_name: folderInput ? `Folder ${folderInput.slice(0, 8)}` : undefined,
+      });
+      setConnections((prev) => prev.map((c) => (c.id === connectionId ? updated : c)));
+      setEditingFolderFor(null);
+      setFolderInput("");
+      toast.success("Folder updated — next sync will use the new folder");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update folder");
+    }
+  };
+
   const filteredUsers = users.filter((u) =>
     userSearch.length >= 2 && u.email.toLowerCase().includes(userSearch.toLowerCase())
   ).slice(0, 6);
@@ -138,7 +229,7 @@ export default function LibraryDetail() {
       )}
       {!library?.description && <div className="mb-6" />}
 
-      <Tabs defaultValue="documents">
+      <Tabs defaultValue={defaultTab}>
         <TabsList className="bg-secondary/30">
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -223,14 +314,154 @@ export default function LibraryDetail() {
         </TabsContent>
 
         <TabsContent value="integrations" className="mt-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {["Google Drive", "Notion", "Confluence", "SharePoint"].map((name) => (
-              <div key={name} className="rounded-xl border border-border/30 bg-card/50 p-5 text-center">
-                <Puzzle className="mx-auto mb-2 h-8 w-8 text-muted-foreground/30" />
-                <p className="text-sm font-medium">{name}</p>
-                <Badge variant="outline" className="mt-2 text-[10px]">Coming soon</Badge>
+          <div className="space-y-4">
+            {/* Google Drive card */}
+            <div className="rounded-xl border border-border/30 bg-card/50 p-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
+                  <svg className="h-6 w-6" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066DA"/>
+                    <path d="M43.65 25L29.9 1.2C28.55 2 27.4 3.1 26.6 4.5L1.2 48.35c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00AC47"/>
+                    <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H60.1l5.55 10.35z" fill="#EA4335"/>
+                    <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832D"/>
+                    <path d="M60.1 52.85H27.5L13.75 76.65c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.4 4.5-1.2z" fill="#2684FC"/>
+                    <path d="M73.4 26.35L60.65 4.5c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l16.45 27.85H87.3c0-1.55-.4-3.1-1.2-4.5z" fill="#FFBA00"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Google Drive</p>
+                  <p className="text-xs text-muted-foreground">Sync documents from a Drive folder automatically</p>
+                </div>
+                {connections.length === 0 && (
+                  <Button
+                    size="sm"
+                    className="ml-auto"
+                    onClick={handleConnectDrive}
+                    disabled={connectingDrive}
+                  >
+                    {connectingDrive
+                      ? <><Loader2 className="h-3 w-3 animate-spin mr-1" />Connecting...</>
+                      : "Connect Google Drive"
+                    }
+                  </Button>
+                )}
               </div>
-            ))}
+
+              {connections.length === 0 ? (
+                <div className="flex flex-col items-center py-8 text-muted-foreground">
+                  <Puzzle className="mb-2 h-8 w-8 opacity-20" />
+                  <p className="text-xs">No connections yet. Connect Google Drive to sync files automatically.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {connections.map((conn) => (
+                    <div key={conn.id} className="rounded-lg border border-border/30 bg-secondary/10 px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        {/* Status indicator */}
+                        {conn.status === "active" && <CheckCircle className="h-4 w-4 text-green-400 shrink-0" />}
+                        {conn.status === "error" && <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />}
+                        {conn.status === "paused" && <AlertCircle className="h-4 w-4 text-yellow-400 shrink-0" />}
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium">
+                              {conn.folder_name
+                                ? <><FolderOpen className="inline h-3 w-3 mr-1" />{conn.folder_name}</>
+                                : conn.folder_id
+                                  ? <><FolderOpen className="inline h-3 w-3 mr-1" />{conn.folder_id.slice(0, 16)}...</>
+                                  : "Entire My Drive"
+                              }
+                            </span>
+                            <Badge variant="outline" className={`text-[10px] ${
+                              conn.status === "active" ? "border-green-500/30 text-green-400" :
+                              conn.status === "error" ? "border-red-500/30 text-red-400" :
+                              "border-yellow-500/30 text-yellow-400"
+                            }`}>
+                              {conn.status}
+                            </Badge>
+                          </div>
+                          {conn.last_synced_at && (
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Last sync: {new Date(conn.last_synced_at).toLocaleString()}
+                            </p>
+                          )}
+                          {conn.error_message && (
+                            <p className="text-[10px] text-red-400 mt-0.5">{conn.error_message}</p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs"
+                            onClick={() => handleSyncNow(conn.id)}
+                            disabled={syncing === conn.id}
+                          >
+                            {syncing === conn.id
+                              ? <Loader2 className="h-3 w-3 animate-spin" />
+                              : <><RefreshCw className="h-3 w-3 mr-1" />Sync Now</>
+                            }
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDisconnect(conn.id)}
+                          >
+                            <Unplug className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Folder configuration */}
+                      {editingFolderFor === conn.id ? (
+                        <div className="mt-3 flex gap-2">
+                          <Input
+                            value={folderInput}
+                            onChange={(e) => setFolderInput(e.target.value)}
+                            placeholder="Google Drive folder ID (from URL)"
+                            className="h-8 text-xs bg-secondary/20 border-border/40 flex-1"
+                          />
+                          <Button size="sm" className="h-8 text-xs" onClick={() => handleSaveFolder(conn.id)}>Save</Button>
+                          <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => setEditingFolderFor(null)}>Cancel</Button>
+                        </div>
+                      ) : (
+                        <button
+                          className="mt-2 text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+                          onClick={() => { setEditingFolderFor(conn.id); setFolderInput(conn.folder_id || ""); }}
+                        >
+                          {conn.folder_id ? "Change folder" : "Set specific folder (optional)"}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Add another connection */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-xs"
+                    onClick={handleConnectDrive}
+                    disabled={connectingDrive}
+                  >
+                    {connectingDrive ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                    + Add another Drive connection
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Other providers — still coming soon */}
+            <div className="grid gap-3 sm:grid-cols-3">
+              {["Notion", "Confluence", "SharePoint"].map((name) => (
+                <div key={name} className="rounded-xl border border-border/30 bg-card/50 p-4 text-center opacity-60">
+                  <Puzzle className="mx-auto mb-2 h-6 w-6 text-muted-foreground/30" />
+                  <p className="text-xs font-medium">{name}</p>
+                  <Badge variant="outline" className="mt-2 text-[10px]">Coming soon</Badge>
+                </div>
+              ))}
+            </div>
           </div>
         </TabsContent>
 

@@ -174,3 +174,16 @@ export interface IngestResponse {
   status: string;
   chunks_count: number;
 }
+
+export interface DriveConnection {
+  id: string;
+  library_id: string;
+  provider: string;
+  folder_id?: string;
+  folder_name?: string;
+  status: "active" | "paused" | "error" | "pending";
+  last_synced_at?: string;
+  sync_interval_minutes: number;
+  error_message?: string;
+  created_at: string;
+}

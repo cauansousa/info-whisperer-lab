@@ -3,15 +3,16 @@ import type {
   MeResponse, Invitation, Agent, Library, Document as DocType,
   Chat, ChatMessage, QueryRequest, QueryResponse,
   LLMProvider, TenantLLMConfig, Group, GroupMember, Permission,
-  IngestResponse, Profile, Tenant,
+  IngestResponse, Profile, Tenant, DriveConnection,
 } from "@/types";
 
 /* ── Service hosts ── */
-const API_BASE        = "https://api.knowledge.cauansousa.com";
-const AUTH_BASE       = `${API_BASE}/auth`;
-const GOVERNANCE_BASE = `${API_BASE}/governance`;
-const INGESTION_BASE  = `${API_BASE}/ingest`;
-const MODEL_BASE      = `${API_BASE}/model`;
+const API_BASE         = "https://api.knowledge.cauansousa.com";
+const AUTH_BASE        = `${API_BASE}/auth`;
+const GOVERNANCE_BASE  = `${API_BASE}/governance`;
+const INGESTION_BASE   = `${API_BASE}/ingest`;
+const CONNECTORS_BASE  = `${API_BASE}/connectors`;
+const MODEL_BASE       = `${API_BASE}/model`;
 
 /* ── Token helper ── */
 async function getToken(): Promise<string> {
@@ -41,6 +42,19 @@ async function apiFetch<T>(baseUrl: string, path: string, options: RequestInit =
     throw new Error(body.message || body.error || `API error ${res.status}`);
   }
   return res.json();
+}
+
+async function apiFetchVoid(baseUrl: string, path: string, options: RequestInit = {}): Promise<void> {
+  const token = await getToken();
+  const res = await fetch(`${baseUrl}${path}`, {
+    ...options,
+    headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", ...options.headers },
+  });
+  if (res.status === 401) { window.location.href = "/login"; throw new Error("Unauthorized"); }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message || body.error || `API error ${res.status}`);
+  }
 }
 
 async function apiFetchNoContentType<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
@@ -135,6 +149,27 @@ export const api = {
     apiFetch<GroupMember>(GOVERNANCE_BASE, `/groups/${id}/members`, {
       method: "POST", body: JSON.stringify({ user_id: userId }),
     }),
+
+  // ─── Connectors (Google Drive) ───
+  getConnections: (libraryId: string) =>
+    apiFetch<DriveConnection[]>(CONNECTORS_BASE, `/${libraryId}`),
+  getGoogleDriveAuthUrl: (libraryId: string, folderId?: string) => {
+    const params = new URLSearchParams({ library_id: libraryId });
+    if (folderId) params.set("folder_id", folderId);
+    return apiFetch<{ auth_url: string; connection_id: string }>(
+      CONNECTORS_BASE, `/google-drive/auth?${params}`
+    );
+  },
+  syncNow: (connectionId: string) =>
+    apiFetch<{ message: string; files_added: number; files_updated: number; files_deleted: number; errors: number }>(
+      CONNECTORS_BASE, `/${connectionId}/sync`, { method: "POST" }
+    ),
+  updateConnection: (connectionId: string, body: { folder_id?: string; folder_name?: string; sync_interval_minutes?: number; status?: string }) =>
+    apiFetch<DriveConnection>(CONNECTORS_BASE, `/${connectionId}`, {
+      method: "PATCH", body: JSON.stringify(body),
+    }),
+  disconnectDrive: (connectionId: string) =>
+    apiFetchVoid(CONNECTORS_BASE, `/${connectionId}`, { method: "DELETE" }),
 
   // ─── Ingestion service ───
   ingestFile: async (file: File, libraryId: string, title: string): Promise<IngestResponse> => {
