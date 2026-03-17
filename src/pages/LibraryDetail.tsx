@@ -27,6 +27,7 @@ export default function LibraryDetail() {
   const [documents, setDocuments] = useState<DocType[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [connections, setConnections] = useState<DriveConnection[]>([]);
+  const [connectorsAvailable, setConnectorsAvailable] = useState(true);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [title, setTitle] = useState("");
@@ -66,7 +67,10 @@ export default function LibraryDetail() {
       api.getDocuments(libraryId),
       api.getLibraryPermissions(libraryId),
       api.getUsers(),
-      api.getConnections(libraryId),
+      api.getConnections(libraryId).catch(() => {
+        setConnectorsAvailable(false);
+        return [] as DriveConnection[];
+      }),
     ])
       .then(([lib, docs, perms, u, conns]) => {
         setLibrary(lib);
@@ -384,6 +388,30 @@ export default function LibraryDetail() {
 
         <TabsContent value="integrations" className="mt-6">
           <div className="space-y-4">
+            {!connectorsAvailable ? (
+              <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-6 text-center">
+                <AlertCircle className="mx-auto mb-3 h-10 w-10 text-yellow-500 opacity-60" />
+                <h3 className="text-sm font-semibold mb-1">Connectors Service Unavailable</h3>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  The integrations service is temporarily unavailable. File upload still works normally. Please try again later.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => {
+                    setConnectorsAvailable(true);
+                    api.getConnections(libraryId!).then(setConnections).catch(() => {
+                      setConnectorsAvailable(false);
+                      toast.error("Connectors service is still unavailable");
+                    });
+                  }}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" /> Retry
+                </Button>
+              </div>
+            ) : (
+            <>
             {/* Google Drive card */}
             <div className="rounded-xl border border-border/30 bg-card/50 p-5">
               <div className="flex items-center gap-3 mb-4">
@@ -521,6 +549,8 @@ export default function LibraryDetail() {
                 </div>
               ))}
             </div>
+            </>
+            )}
           </div>
         </TabsContent>
 
