@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import type { Library, Document as DocType, Permission, Profile, DriveConnection } from "@/types";
-import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle, ChevronRight, Home } from "lucide-react";
+import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle, ChevronRight, Home, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -278,6 +278,17 @@ export default function LibraryDetail() {
     }
   };
 
+  const handleDeleteDocument = async (docId: string, docTitle: string) => {
+    if (!confirm(`Delete "${docTitle}"? This will permanently remove the file and its data.`)) return;
+    try {
+      await api.deleteDocument(docId);
+      setDocuments((prev) => prev.filter((d) => d.id !== docId));
+      toast.success("Document deleted");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete document");
+    }
+  };
+
   const filteredUsers = users.filter((u) =>
     userSearch.length >= 2 && u.email.toLowerCase().includes(userSearch.toLowerCase())
   ).slice(0, 6);
@@ -339,16 +350,26 @@ export default function LibraryDetail() {
             <div className="overflow-auto rounded-lg border border-border/30">
               <table className="w-full text-sm">
                 <thead className="border-b border-border/30 bg-secondary/20">
-                  <tr><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Title</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Type</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Size</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Status</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Date</th></tr>
+                  <tr><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Title</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Type</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Size</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Status</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Date</th><th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground w-16"></th></tr>
                 </thead>
                 <tbody className="divide-y divide-border/20">
                   {documents.map((doc) => (
-                    <tr key={doc.id} className="hover:bg-secondary/10">
+                    <tr key={doc.id} className="hover:bg-secondary/10 group">
                       <td className="px-4 py-2">{doc.title}</td>
                       <td className="px-4 py-2 text-muted-foreground">{doc.mime_type}</td>
                       <td className="px-4 py-2 text-muted-foreground">{formatBytes(doc.size_bytes)}</td>
                       <td className="px-4 py-2">{statusBadge(doc.status)}</td>
                       <td className="px-4 py-2 text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-2 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDeleteDocument(doc.id, doc.title)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
