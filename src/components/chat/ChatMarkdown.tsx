@@ -396,7 +396,7 @@ function CodeBlock({ language, content }: { language: string; content: string })
   );
 }
 
-
+export default function ChatMarkdown({ content }: Props) {
   const rendered = useMemo(() => {
     const { cleaned, footnotes } = extractFootnotes(content);
     const blocks = parseBlocks(cleaned);
