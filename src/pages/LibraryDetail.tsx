@@ -528,16 +528,42 @@ export default function LibraryDetail() {
                         </div>
                       </div>
 
-                      {/* Folder picker button */}
-                      <button
-                        className="mt-2 text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline flex items-center gap-1"
-                        onClick={() => openFolderPicker(conn.id)}
-                      >
-                        <FolderOpen className="h-3 w-3" />
-                        {conn.folder_name
-                          ? `Mudar pasta (atual: ${conn.folder_name})`
-                          : "Selecionar pasta do Drive"}
-                      </button>
+                      {/* Bottom row: folder + interval */}
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        <button
+                          className="text-[10px] text-muted-foreground hover:text-foreground underline-offset-2 hover:underline flex items-center gap-1"
+                          onClick={() => openFolderPicker(conn.id)}
+                        >
+                          <FolderOpen className="h-3 w-3" />
+                          {conn.folder_name
+                            ? `Mudar pasta (atual: ${conn.folder_name})`
+                            : "Selecionar pasta do Drive"}
+                        </button>
+
+                        {/* Sync interval selector */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[10px] text-muted-foreground">Auto-sync:</span>
+                          <select
+                            className="text-[10px] bg-secondary/30 border border-border/30 rounded px-1.5 py-0.5 text-foreground cursor-pointer"
+                            value={conn.sync_interval_minutes}
+                            onChange={async (e) => {
+                              const minutes = Number(e.target.value);
+                              try {
+                                const updated = await api.updateConnection(conn.id, { sync_interval_minutes: minutes });
+                                setConnections((prev) => prev.map((c) => (c.id === conn.id ? updated : c)));
+                                toast.success("Sync interval updated");
+                              } catch {
+                                toast.error("Failed to update interval");
+                              }
+                            }}
+                          >
+                            <option value={15}>Every 15 min</option>
+                            <option value={60}>Every hour</option>
+                            <option value={360}>Every 6 hours</option>
+                            <option value={1440}>Every day</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   ))}
 
