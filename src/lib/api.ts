@@ -7,12 +7,12 @@ import type {
 } from "@/types";
 
 /* ── Service hosts ── */
-const API_BASE         = "https://api.knowledge.cauansousa.com";
+const API_BASE         = import.meta.env.VITE_API_BASE_URL   ?? "https://api.knowledge.cauansousa.com";
 const AUTH_BASE        = `${API_BASE}/auth`;
 const GOVERNANCE_BASE  = `${API_BASE}/governance`;
 const INGESTION_BASE   = `${API_BASE}/ingest`;
 const CONNECTORS_BASE  = `${API_BASE}/connectors`;
-const MODEL_BASE       = `${API_BASE}/model`;
+const MODEL_BASE       = import.meta.env.VITE_MODEL_BASE_URL ?? `${API_BASE}/model`;
 
 /* ── Token helper ── */
 async function getToken(): Promise<string> {
