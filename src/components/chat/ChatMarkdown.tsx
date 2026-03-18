@@ -366,20 +366,7 @@ export default function ChatMarkdown({ content }: Props) {
     const blocks = parseBlocks(cleaned);
     return blocks.map((block, i) => {
       if (block.type === "code") {
-        return (
-          <div key={i} className="my-2 rounded-lg overflow-hidden border border-border/30">
-            <div className="flex items-center bg-secondary/40 px-3 py-1">
-              <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{block.language}</span>
-            </div>
-            <SyntaxHighlighter
-              language={block.language || "text"}
-              style={oneDark}
-              customStyle={{ margin: 0, borderRadius: 0, background: "hsl(0 0% 5%)", fontSize: "11px", lineHeight: "1.5", padding: "12px" }}
-            >
-              {block.content}
-            </SyntaxHighlighter>
-          </div>
-        );
+        return <CodeBlock key={i} language={block.language || "text"} content={block.content} />;
       }
       return <div key={i}>{renderTextBlock(block.content, footnotes)}</div>;
     });
