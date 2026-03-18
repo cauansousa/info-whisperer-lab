@@ -188,8 +188,10 @@ export const api = {
       method: "POST", body: formData,
     });
   },
+  deleteDocument: (documentId: string) =>
+    apiFetchVoid(INGESTION_BASE, `/document/${documentId}`, { method: "DELETE" }),
 
-  // ─── Model / Query service ───
+
   query: (body: QueryRequest) =>
     apiFetch<QueryResponse>(MODEL_BASE, "/query", { method: "POST", body: JSON.stringify(body) }),
 

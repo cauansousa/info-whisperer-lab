@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import type { Library, Document as DocType, Permission, Profile, DriveConnection } from "@/types";
-import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle, ChevronRight, Home } from "lucide-react";
+import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle, ChevronRight, Home, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
