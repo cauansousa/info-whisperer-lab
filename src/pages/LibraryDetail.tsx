@@ -392,7 +392,7 @@ export default function LibraryDetail() {
                 id="system-prompt"
                 value={systemPrompt}
                 onChange={(e) => setSystemPrompt(e.target.value)}
-                placeholder="Ex: Você é um assistente especializado em documentos corporativos. Responda sempre em português, de forma clara e objetiva..."
+                placeholder="Ex: Esta biblioteca contém relatórios financeiros trimestrais da empresa. Ao responder, priorize dados numéricos e cite o período de referência. Sempre mencione a fonte do documento utilizado."
                 className="min-h-[200px] bg-secondary/20 border-border/40 font-mono text-xs"
               />
             </div>
