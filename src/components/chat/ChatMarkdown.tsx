@@ -359,8 +359,44 @@ function renderTextBlock(text: string, footnotes: Map<string, string>): React.Re
 
   return elements;
 }
+function CodeBlock({ language, content }: { language: string; content: string }) {
+  const [copied, setCopied] = useState(false);
 
-export default function ChatMarkdown({ content }: Props) {
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [content]);
+
+  return (
+    <div className="my-2 rounded-lg overflow-hidden border border-border/30 group/code">
+      <div className="flex items-center justify-between bg-secondary/40 px-3 py-1">
+        <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{language}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover/code:opacity-100"
+          aria-label="Copy code"
+        >
+          {copied ? (
+            <><Check size={12} className="text-green-400" /><span className="text-green-400">Copied</span></>
+          ) : (
+            <><Copy size={12} /><span>Copy</span></>
+          )}
+        </button>
+      </div>
+      <SyntaxHighlighter
+        language={language}
+        style={oneDark}
+        customStyle={{ margin: 0, borderRadius: 0, background: "hsl(0 0% 5%)", fontSize: "11px", lineHeight: "1.5", padding: "12px" }}
+      >
+        {content}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
+
+
   const rendered = useMemo(() => {
     const { cleaned, footnotes } = extractFootnotes(content);
     const blocks = parseBlocks(cleaned);
