@@ -148,14 +148,21 @@ export default function LibraryDetail() {
     setConnectingDrive(true);
     try {
       const { auth_url } = await api.getGoogleDriveAuthUrl(libraryId);
-      const popup = window.open(auth_url, "google_oauth", "width=600,height=700");
+      window.open(auth_url, "google_oauth", "width=600,height=700");
 
-      // Listen for postMessage from OAuthCallback page
-      const handler = async (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return;
+      // Google's OAuth pages set Cross-Origin-Opener-Policy: same-origin which
+      // severs window.opener — postMessage won't reach us. BroadcastChannel
+      // works same-origin without needing the opener reference.
+      const bc = new BroadcastChannel("oauth_drive");
+      const timeout = setTimeout(() => {
+        bc.close();
+        setConnectingDrive(false);
+      }, 5 * 60 * 1000);
+
+      bc.onmessage = async (event) => {
         if (event.data?.type !== "oauth_drive_connected") return;
-        window.removeEventListener("message", handler);
-        clearInterval(poll);
+        bc.close();
+        clearTimeout(timeout);
         setConnectingDrive(false);
         if (event.data.error) {
           toast.error(`OAuth error: ${event.data.error}`);
@@ -165,17 +172,6 @@ export default function LibraryDetail() {
           setConnections(conns);
         }
       };
-      window.addEventListener("message", handler);
-
-      // Fallback poll: if user closes popup without completing OAuth
-      const poll = setInterval(() => {
-        if (!popup || popup.closed) {
-          clearInterval(poll);
-          window.removeEventListener("message", handler);
-          setConnectingDrive(false);
-          api.getConnections(libraryId!).then(setConnections);
-        }
-      }, 1000);
     } catch (err: any) {
       toast.error(err.message || "Failed to initiate Google Drive connection");
       setConnectingDrive(false);
