@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { Copy, Check } from "lucide-react";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Props {
