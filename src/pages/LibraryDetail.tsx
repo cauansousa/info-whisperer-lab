@@ -278,6 +278,17 @@ export default function LibraryDetail() {
     }
   };
 
+  const handleDeleteDocument = async (docId: string, docTitle: string) => {
+    if (!confirm(`Delete "${docTitle}"? This will permanently remove the file and its data.`)) return;
+    try {
+      await api.deleteDocument(docId);
+      setDocuments((prev) => prev.filter((d) => d.id !== docId));
+      toast.success("Document deleted");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete document");
+    }
+  };
+
   const filteredUsers = users.filter((u) =>
     userSearch.length >= 2 && u.email.toLowerCase().includes(userSearch.toLowerCase())
   ).slice(0, 6);
