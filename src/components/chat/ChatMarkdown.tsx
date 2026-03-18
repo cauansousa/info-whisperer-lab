@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { Copy, Check } from "lucide-react";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Props {
@@ -358,6 +359,42 @@ function renderTextBlock(text: string, footnotes: Map<string, string>): React.Re
 
   return elements;
 }
+function CodeBlock({ language, content }: { language: string; content: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [content]);
+
+  return (
+    <div className="my-2 rounded-lg overflow-hidden border border-border/30 group/code">
+      <div className="flex items-center justify-between bg-secondary/40 px-3 py-1">
+        <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{language}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover/code:opacity-100"
+          aria-label="Copy code"
+        >
+          {copied ? (
+            <><Check size={12} className="text-green-400" /><span className="text-green-400">Copied</span></>
+          ) : (
+            <><Copy size={12} /><span>Copy</span></>
+          )}
+        </button>
+      </div>
+      <SyntaxHighlighter
+        language={language}
+        style={oneDark}
+        customStyle={{ margin: 0, borderRadius: 0, background: "hsl(0 0% 5%)", fontSize: "11px", lineHeight: "1.5", padding: "12px" }}
+      >
+        {content}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
 
 export default function ChatMarkdown({ content }: Props) {
   const rendered = useMemo(() => {
@@ -365,20 +402,7 @@ export default function ChatMarkdown({ content }: Props) {
     const blocks = parseBlocks(cleaned);
     return blocks.map((block, i) => {
       if (block.type === "code") {
-        return (
-          <div key={i} className="my-2 rounded-lg overflow-hidden border border-border/30">
-            <div className="flex items-center bg-secondary/40 px-3 py-1">
-              <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{block.language}</span>
-            </div>
-            <SyntaxHighlighter
-              language={block.language || "text"}
-              style={oneDark}
-              customStyle={{ margin: 0, borderRadius: 0, background: "hsl(0 0% 5%)", fontSize: "11px", lineHeight: "1.5", padding: "12px" }}
-            >
-              {block.content}
-            </SyntaxHighlighter>
-          </div>
-        );
+        return <CodeBlock key={i} language={block.language || "text"} content={block.content} />;
       }
       return <div key={i}>{renderTextBlock(block.content, footnotes)}</div>;
     });
