@@ -350,16 +350,26 @@ export default function LibraryDetail() {
             <div className="overflow-auto rounded-lg border border-border/30">
               <table className="w-full text-sm">
                 <thead className="border-b border-border/30 bg-secondary/20">
-                  <tr><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Title</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Type</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Size</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Status</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Date</th></tr>
+                  <tr><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Title</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Type</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Size</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Status</th><th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Date</th><th className="px-4 py-2 text-right text-xs font-medium text-muted-foreground w-16"></th></tr>
                 </thead>
                 <tbody className="divide-y divide-border/20">
                   {documents.map((doc) => (
-                    <tr key={doc.id} className="hover:bg-secondary/10">
+                    <tr key={doc.id} className="hover:bg-secondary/10 group">
                       <td className="px-4 py-2">{doc.title}</td>
                       <td className="px-4 py-2 text-muted-foreground">{doc.mime_type}</td>
                       <td className="px-4 py-2 text-muted-foreground">{formatBytes(doc.size_bytes)}</td>
                       <td className="px-4 py-2">{statusBadge(doc.status)}</td>
                       <td className="px-4 py-2 text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-2 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDeleteDocument(doc.id, doc.title)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
