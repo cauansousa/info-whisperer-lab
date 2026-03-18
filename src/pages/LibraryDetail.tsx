@@ -395,6 +395,15 @@ export default function LibraryDetail() {
                 placeholder="Ex: Esta biblioteca contém relatórios financeiros trimestrais da empresa. Ao responder, priorize dados numéricos e cite o período de referência. Sempre mencione a fonte do documento utilizado."
                 className="min-h-[200px] bg-secondary/20 border-border/40 font-mono text-xs"
               />
+              <div className="rounded-lg border border-border/30 bg-secondary/10 p-3 space-y-1.5">
+                <p className="text-[11px] font-medium text-muted-foreground">💡 Dicas para um bom system prompt de dados:</p>
+                <ul className="text-[11px] text-muted-foreground/80 space-y-1 list-disc list-inside">
+                  <li><strong>Descreva o conteúdo:</strong> Explique quais tipos de documentos e dados estão na biblioteca (ex: relatórios financeiros, manuais técnicos, contratos).</li>
+                  <li><strong>Defina o formato das respostas:</strong> Indique se o agente deve priorizar tabelas, dados numéricos, citações diretas ou resumos.</li>
+                  <li><strong>Exija referências:</strong> Peça para o agente sempre citar o nome do documento e a seção de onde extraiu a informação.</li>
+                  <li><strong>Estabeleça limites:</strong> Instrua o agente a responder apenas com base nos documentos disponíveis e admitir quando não encontrar a informação.</li>
+                </ul>
+              </div>
             </div>
             <Button onClick={handleSavePrompt} disabled={savingPrompt} size="sm">
               {savingPrompt ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
