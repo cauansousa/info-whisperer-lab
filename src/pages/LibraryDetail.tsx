@@ -324,6 +324,7 @@ export default function LibraryDetail() {
               <input
                 ref={fileRef}
                 type="file"
+                accept=".pdf,.docx,.doc,.xlsx,.xls,.csv"
                 onChange={(e) => {
                   const f = e.target.files?.[0] || null;
                   setFile(f);
