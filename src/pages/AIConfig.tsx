@@ -78,21 +78,23 @@ export default function AIConfig() {
         <p className="py-12 text-center text-sm text-muted-foreground">No providers configured yet.</p>
       ) : (
         <div className="space-y-3">
-          {configs.map((config) => (
-            <div key={config.id} className="flex items-center justify-between rounded-xl border border-border/30 bg-card/50 px-5 py-4">
-              <div>
-                <h3 className="text-sm font-medium">{config.llm_providers?.model || config.provider_id}</h3>
-                <p className="text-xs text-muted-foreground">{config.llm_providers?.name}</p>
+          {configs.map((config) => {
+            const prov = config.llm_providers || providers.find((p) => p.id === config.provider_id);
+            return (
+              <div key={config.id} className="flex items-center justify-between rounded-xl border border-border/30 bg-card/50 px-5 py-4">
+                <div>
+                  <h3 className="text-sm font-medium">{prov?.model || config.provider_id}</h3>
+                  <p className="text-xs text-muted-foreground">{prov?.name}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs text-muted-foreground">{config.api_key || "****"}</span>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    if (prov) { setSelectedProvider(prov as LLMProvider); setApiKey(""); setOpen(true); }
+                  }}>Edit</Button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-mono text-xs text-muted-foreground">{config.api_key || "****"}</span>
-                <Button variant="outline" size="sm" onClick={() => {
-                  const prov = providers.find((p) => p.id === config.provider_id);
-                  if (prov) { setSelectedProvider(prov); setApiKey(""); setOpen(true); }
-                }}>Edit</Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
