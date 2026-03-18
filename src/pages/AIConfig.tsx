@@ -81,8 +81,8 @@ export default function AIConfig() {
           {configs.map((config) => (
             <div key={config.id} className="flex items-center justify-between rounded-xl border border-border/30 bg-card/50 px-5 py-4">
               <div>
-                <h3 className="text-sm font-medium">{config.llm_providers?.name || config.provider_id}</h3>
-                <p className="text-xs text-muted-foreground">{config.llm_providers?.model}</p>
+                <h3 className="text-sm font-medium">{config.llm_providers?.model || config.provider_id}</h3>
+                <p className="text-xs text-muted-foreground">{config.llm_providers?.name}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-mono text-xs text-muted-foreground">{config.api_key || "****"}</span>
