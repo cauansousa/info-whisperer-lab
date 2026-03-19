@@ -1,7 +1,9 @@
 import { authSupabase } from "@/lib/auth-client";
 import type { QueryRequest, SourceItem } from "@/types";
 
-const MODEL_BASE = "https://api.knowledge.cauansousa.com/model";
+const MODEL_BASE =
+  (import.meta.env.VITE_MODEL_BASE_URL as string | undefined) ??
+  "https://api.knowledge.cauansousa.com/model";
 
 async function getToken(): Promise<string> {
   const { data } = await authSupabase.auth.getSession();
@@ -49,7 +51,7 @@ export async function streamQuery(
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
-    callbacks.onError(errBody.message || errBody.error || `API error ${res.status}`);
+    callbacks.onError(errBody.detail || errBody.message || errBody.error || `API error ${res.status}`);
     return;
   }
 
