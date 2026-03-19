@@ -55,7 +55,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
   }, []);
 
   useEffect(() => {
-    if (!chatId) { setMessages([]); setSelectedAgent(""); return; }
+    if (!chatId) { setMessages([]); setSelectedAgent("__none__"); return; }
     setLoadingMessages(true);
     Promise.all([
       api.getChatMessages(chatId),
@@ -63,7 +63,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
     ])
       .then(([msgs, chat]) => {
         setMessages(msgs);
-        setSelectedAgent(chat.agent_id ?? "");
+        setSelectedAgent(chat.agent_id ?? "__none__");
       })
       .catch(() => toast.error("Failed to load messages"))
       .finally(() => setLoadingMessages(false));
@@ -119,7 +119,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
     await streamQuery(
       {
         question,
-        agent_id: selectedAgent || undefined,
+        agent_id: (selectedAgent && selectedAgent !== "__none__") ? selectedAgent : undefined,
         chat_id: chatId || undefined,
       },
       {
@@ -237,7 +237,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
               <SelectValue placeholder="Select an agent (optional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All libraries (no agent)</SelectItem>
+              <SelectItem value="__none__">All libraries (no agent)</SelectItem>
               {agents.map((a) => (
                 <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
               ))}
