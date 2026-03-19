@@ -12,7 +12,8 @@ const AUTH_BASE        = `${API_BASE}/auth`;
 const GOVERNANCE_BASE  = `${API_BASE}/governance`;
 const INGESTION_BASE   = `${API_BASE}/ingest`;
 const CONNECTORS_BASE  = `${API_BASE}/connectors`;
-const MODEL_BASE       = import.meta.env.VITE_MODEL_BASE_URL ?? `${API_BASE}/model`;
+const MODEL_BASE       = `${API_BASE}/model`;                                          // always cloud — chat history, LLM config
+const MODEL_INFERENCE  = import.meta.env.VITE_MODEL_BASE_URL ?? MODEL_BASE;            // local when VITE_MODEL_BASE_URL is set — inference only
 
 /* ── Token helper ── */
 async function getToken(): Promise<string> {
@@ -193,7 +194,7 @@ export const api = {
 
 
   query: (body: QueryRequest) =>
-    apiFetch<QueryResponse>(MODEL_BASE, "/query", { method: "POST", body: JSON.stringify(body) }),
+    apiFetch<QueryResponse>(MODEL_INFERENCE, "/query", { method: "POST", body: JSON.stringify(body) }),
 
   getChats: () => apiFetch<Chat[]>(MODEL_BASE, "/chats"),
   getChat: (id: string) => apiFetch<Chat>(MODEL_BASE, `/chats/${id}`),
