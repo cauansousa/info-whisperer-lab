@@ -55,10 +55,16 @@ export default function ChatView({ chatId }: ChatViewProps) {
   }, []);
 
   useEffect(() => {
-    if (!chatId) { setMessages([]); return; }
+    if (!chatId) { setMessages([]); setSelectedAgent(""); return; }
     setLoadingMessages(true);
-    api.getChatMessages(chatId)
-      .then(setMessages)
+    Promise.all([
+      api.getChatMessages(chatId),
+      api.getChat(chatId),
+    ])
+      .then(([msgs, chat]) => {
+        setMessages(msgs);
+        setSelectedAgent(chat.agent_id ?? "");
+      })
       .catch(() => toast.error("Failed to load messages"))
       .finally(() => setLoadingMessages(false));
   }, [chatId]);
@@ -231,6 +237,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
               <SelectValue placeholder="Select an agent (optional)" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="">All libraries (no agent)</SelectItem>
               {agents.map((a) => (
                 <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
               ))}

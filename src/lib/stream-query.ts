@@ -49,7 +49,7 @@ export async function streamQuery(
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
-    callbacks.onError(errBody.message || errBody.error || `API error ${res.status}`);
+    callbacks.onError(errBody.detail || errBody.message || errBody.error || `API error ${res.status}`);
     return;
   }
 
