@@ -67,8 +67,8 @@ export default function LibraryDetail() {
     Promise.all([
       api.getLibrary(libraryId),
       api.getDocuments(libraryId),
-      api.getLibraryPermissions(libraryId),
-      api.getUsers(),
+      api.getLibraryPermissions(libraryId).catch(() => [] as Permission[]),
+      api.getUsers().catch(() => [] as Profile[]),
       api.getConnections(libraryId).catch(() => {
         setConnectorsAvailable(false);
         return [] as DriveConnection[];
