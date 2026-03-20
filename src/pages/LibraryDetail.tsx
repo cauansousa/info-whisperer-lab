@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Library, Document as DocType, Permission, Profile, DriveConnection } from "@/types";
 import { Upload, FileText, Loader2, Shield, Puzzle, Save, RefreshCw, Unplug, FolderOpen, CheckCircle, AlertCircle, ChevronRight, Home, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,6 +24,7 @@ function formatBytes(bytes: number) {
 export default function LibraryDetail() {
   const { libraryId } = useParams<{ libraryId: string }>();
   const [searchParams] = useSearchParams();
+  const { me, hasRole } = useAuth();
   const [library, setLibrary] = useState<Library | null>(null);
   const [documents, setDocuments] = useState<DocType[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -295,6 +297,10 @@ export default function LibraryDetail() {
 
   if (loading) return <div className="p-6"><Skeleton className="h-8 w-48 mb-4" /><Skeleton className="h-64 w-full" /></div>;
 
+  const canManage = !!library && (
+    library.created_by === me?.user_id || hasRole("admin")
+  );
+
   const statusBadge = (status: string) => {
     if (status === "ready") return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Ready</Badge>;
     if (status === "processing") return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30"><Loader2 className="h-3 w-3 animate-spin mr-1" />Processing</Badge>;
@@ -312,13 +318,13 @@ export default function LibraryDetail() {
       <Tabs defaultValue={defaultTab}>
         <TabsList className="bg-secondary/30">
           <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          {canManage && <TabsTrigger value="settings">Settings</TabsTrigger>}
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
-          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+          {canManage && <TabsTrigger value="permissions">Permissions</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="documents" className="mt-6">
-          <form onSubmit={handleUpload} className="mb-6 flex flex-wrap items-end gap-3">
+          {canManage && <form onSubmit={handleUpload} className="mb-6 flex flex-wrap items-end gap-3">
             <div>
               <label className="mb-1 block text-xs text-muted-foreground">File</label>
               <input
@@ -340,7 +346,7 @@ export default function LibraryDetail() {
             <Button type="submit" disabled={uploading || !file} size="sm">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Upload className="h-4 w-4 mr-1" />Upload</>}
             </Button>
-          </form>
+          </form>}
 
           {documents.length === 0 ? (
             <div className="flex flex-col items-center py-16 text-muted-foreground">
@@ -362,14 +368,16 @@ export default function LibraryDetail() {
                       <td className="px-4 py-2">{statusBadge(doc.status)}</td>
                       <td className="px-4 py-2 text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</td>
                       <td className="px-4 py-2 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                          onClick={() => handleDeleteDocument(doc.id, doc.title)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        {canManage && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDeleteDocument(doc.id, doc.title)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
