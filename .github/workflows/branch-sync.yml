@@ -1,0 +1,47 @@
+name: Branch Sync Agent
+
+on:
+  push:
+    branches:
+      - main
+      - local-deploy
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Avoid triggering on sync PRs themselves
+    if: "!startsWith(github.event.head_commit.message, 'sync:')"
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "Branch Sync Agent"
+          git config user.email "sync-agent@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install anthropic requests
+
+      - name: Run sync agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: python .github/scripts/sync_agent.py
