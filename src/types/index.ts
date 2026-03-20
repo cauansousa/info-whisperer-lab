@@ -65,6 +65,7 @@ export interface Library {
   description?: string;
   system_prompt?: string;
   created_at: string;
+  created_by?: string;
 }
 
 export interface Document {
