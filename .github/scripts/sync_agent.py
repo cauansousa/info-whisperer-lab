@@ -143,6 +143,11 @@ def handle_replicate(pr_title, pr_body):
 
     out, code = run(f"git cherry-pick {COMMIT_SHA}")
     if code != 0:
+        # Empty cherry-pick means changes already exist in target — not a real failure
+        if "nothing to commit" in out or "empty" in out.lower():
+            print("Changes already present in target branch, nothing to sync.")
+            run("git cherry-pick --skip")
+            return True
         print(f"Cherry-pick failed, aborting: {out}")
         run("git cherry-pick --abort")
         return False
