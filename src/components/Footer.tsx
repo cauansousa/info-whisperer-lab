@@ -1,4 +1,5 @@
 import { Brain } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => (
   <footer className="border-t border-border/50 py-12">
@@ -12,9 +13,15 @@ const Footer = () => (
             Knowledge <span className="text-primary">AI</span>
           </span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          © 2026 Knowledge AI. Todos os direitos reservados.
-        </p>
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+          <div className="flex gap-6 text-sm text-muted-foreground">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            © 2026 Knowledge AI. Todos os direitos reservados.
+          </p>
+        </div>
       </div>
     </div>
   </footer>

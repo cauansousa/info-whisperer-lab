@@ -25,6 +25,8 @@ import Organization from "./pages/Organization";
 import AIConfig from "./pages/AIConfig";
 import Signup from "./pages/Signup";
 import OAuthCallback from "./pages/OAuthCallback";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,8 @@ const App = () => (
             <Route path="/invite" element={<Invite />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/oauth-callback" element={<OAuthCallback />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
 
             {/* Protected dashboard routes */}
             <Route path="/app" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
