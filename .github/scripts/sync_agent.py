@@ -103,10 +103,12 @@ Respond with ONLY a raw JSON object (no markdown fences):
 
     response_text = message.content[0].text.strip()
 
-    # Strip markdown fences if Claude wrapped the JSON anyway
-    if response_text.startswith("```"):
-        lines = response_text.split("\n")
-        response_text = "\n".join(lines[1:-1])
+    # Extract the JSON object robustly — ignore any text before/after it
+    start = response_text.find("{")
+    end = response_text.rfind("}") + 1
+    if start == -1 or end == 0:
+        raise ValueError(f"No JSON object found in Claude response:\n{response_text}")
+    response_text = response_text[start:end]
 
     return json.loads(response_text)
 
