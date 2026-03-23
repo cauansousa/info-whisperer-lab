@@ -65,9 +65,18 @@ export default function ChatView({ chatId }: ChatViewProps) {
         setMessages(msgs);
         setSelectedAgent(chat.agent_id ?? "__none__");
       })
-      .catch(() => toast.error("Failed to load messages"))
+      .catch((err) => {
+        const status = err?.status ?? err?.response?.status;
+        if (status === 404) {
+          // Chat was deleted — remove from list and go to new chat
+          setChats((prev) => prev.filter((c) => c.id !== chatId));
+          navigate("/app", { replace: true });
+        } else {
+          toast.error("Failed to load messages");
+        }
+      })
       .finally(() => setLoadingMessages(false));
-  }, [chatId]);
+  }, [chatId, navigate]);
 
   useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 

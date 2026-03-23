@@ -23,6 +23,14 @@ async function getToken(): Promise<string> {
 }
 
 /* ── Generic fetch ── */
+class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 async function apiFetch<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
   const res = await fetch(`${baseUrl}${path}`, {
@@ -35,11 +43,11 @@ async function apiFetch<T>(baseUrl: string, path: string, options: RequestInit =
   });
   if (res.status === 401) {
     window.location.href = "/login";
-    throw new Error("Unauthorized");
+    throw new ApiError("Unauthorized", 401);
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || body.error || `API error ${res.status}`);
+    throw new ApiError(body.detail || body.message || body.error || `API error ${res.status}`, res.status);
   }
   return res.json();
 }
