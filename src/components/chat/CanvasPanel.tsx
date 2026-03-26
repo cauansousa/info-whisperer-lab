@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Download, FileText, Table2, Code2, FileCode, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,12 +24,17 @@ interface CanvasPanelProps {
 export default function CanvasPanel({ document, onClose }: CanvasPanelProps) {
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(t);
+  }, [copied]);
+
   if (!document) return null;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(document.content);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleExport = async () => {

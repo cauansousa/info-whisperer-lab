@@ -30,7 +30,9 @@ export default function ChatView({ chatId }: ChatViewProps) {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sources, setSources] = useState<Record<string, SourceItem[]>>({});
-  const [selectedAgent, setSelectedAgent] = useState<string>("");
+  const [selectedAgent, setSelectedAgent] = useState<string>(
+    () => localStorage.getItem("knowledgeai:selectedAgent") ?? ""
+  );
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loadingChats, setLoadingChats] = useState(true);
@@ -39,23 +41,26 @@ export default function ChatView({ chatId }: ChatViewProps) {
   const messagesEnd = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamContentRef = useRef("");
+  const isMountedRef = useRef(true);
 
   const scrollToBottom = useCallback(() => {
     messagesEnd.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  useEffect(() => () => { isMountedRef.current = false; }, []);
+
   useEffect(() => {
-    api.getAgents()
-      .then(setAgents)
-      .catch(() => toast.error("Failed to load agents"));
-    api.getChats()
-      .then(setChats)
-      .catch(() => {})
-      .finally(() => setLoadingChats(false));
+    Promise.all([
+      api.getAgents().catch(() => [] as Agent[]),
+      api.getChats().catch(() => [] as Chat[]),
+    ]).then(([fetchedAgents, fetchedChats]) => {
+      setAgents(fetchedAgents);
+      setChats(fetchedChats);
+    }).finally(() => setLoadingChats(false));
   }, []);
 
   useEffect(() => {
-    if (!chatId) { setMessages([]); setSelectedAgent("__none__"); return; }
+    if (!chatId) { setMessages([]); return; }
     setLoadingMessages(true);
     Promise.all([
       api.getChatMessages(chatId),
@@ -63,7 +68,8 @@ export default function ChatView({ chatId }: ChatViewProps) {
     ])
       .then(([msgs, chat]) => {
         setMessages(msgs);
-        setSelectedAgent(chat.agent_id ?? "__none__");
+        const agent = chat.agent_id ?? localStorage.getItem("knowledgeai:selectedAgent") ?? "";
+        setSelectedAgent(agent);
       })
       .catch(() => toast.error("Failed to load messages"))
       .finally(() => setLoadingMessages(false));
@@ -124,6 +130,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
       },
       {
         onToken: (token) => {
+          if (!isMountedRef.current) return;
           streamContentRef.current += token;
           const currentContent = streamContentRef.current;
           setMessages((prev) =>
@@ -133,21 +140,23 @@ export default function ChatView({ chatId }: ChatViewProps) {
           );
         },
         onChatId: (id) => {
+          if (!isMountedRef.current) return;
           receivedChatId = id;
           if (!chatId) {
             navigate(`/app/chat/${id}`, { replace: true });
-            api.getChats().then(setChats);
+            api.getChats().then(setChats).catch(() => {});
           }
         },
         onSources: (srcs) => {
+          if (!isMountedRef.current) return;
           if (srcs?.length) {
             setSources((prev) => ({ ...prev, [agentMsgId]: srcs }));
           }
         },
         onDone: () => {
+          if (!isMountedRef.current) return;
           setSending(false);
           abortRef.current = null;
-          // Auto-open canvas if response contains structured content
           const finalContent = streamContentRef.current;
           if (finalContent) {
             const doc = parseCanvasContent(agentMsgId, finalContent);
@@ -155,10 +164,10 @@ export default function ChatView({ chatId }: ChatViewProps) {
           }
         },
         onError: (err) => {
+          if (!isMountedRef.current) return;
           toast.error(err || "Failed to send message");
           setSending(false);
           abortRef.current = null;
-          // Remove the empty agent message on error
           if (!streamContentRef.current) {
             setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
           }
@@ -178,6 +187,11 @@ export default function ChatView({ chatId }: ChatViewProps) {
   };
 
   const hasCanvasContent = (content: string) => parseCanvasContent("test", content) !== null;
+
+  const handleAgentChange = (v: string) => {
+    setSelectedAgent(v);
+    localStorage.setItem("knowledgeai:selectedAgent", v);
+  };
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
@@ -232,7 +246,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
       <div className="flex flex-1 flex-col">
         {/* Agent selector */}
         <div className="border-b border-border/30 px-4 py-2">
-          <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+          <Select value={selectedAgent} onValueChange={handleAgentChange}>
             <SelectTrigger className="w-56 bg-secondary/20 border-border/30 h-8 text-xs">
               <SelectValue placeholder="Select an agent (optional)" />
             </SelectTrigger>

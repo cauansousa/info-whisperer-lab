@@ -163,5 +163,7 @@ export async function streamQuery(
   } catch (err: any) {
     if (err.name === "AbortError") return;
     callbacks.onError(err.message || "Stream error");
+  } finally {
+    try { reader.cancel(); } catch {}
   }
 }
