@@ -9,6 +9,7 @@ import { ArrowDownToLine, RefreshCw } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getApiBase, setApiBase, resetApiBase, getDefaultApiBase, isRunningInTauri } from "@/lib/config";
+import { invoke } from "@tauri-apps/api/core";
 import {
   listOllamaModels,
   getLocalOllamaModel,
@@ -104,7 +105,14 @@ export default function Settings() {
   }
 
   function openDownload() {
-    if (downloadUrl) window.open(downloadUrl, "_blank");
+    if (!downloadUrl) return;
+    if (isTauri) {
+      invoke("open_url", { url: downloadUrl }).catch(() => {
+        window.open(downloadUrl, "_blank");
+      });
+    } else {
+      window.open(downloadUrl, "_blank");
+    }
   }
 
   async function handleTest() {
