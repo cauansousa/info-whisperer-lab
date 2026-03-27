@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { streamQuery } from "@/lib/stream-query";
+import { isUsingLocalOllama, getLocalOllamaModel, streamQueryOllama } from "@/lib/local-llm";
+import { isRunningInTauri } from "@/lib/config";
 import type { Chat, Agent, ChatMessage, SourceItem } from "@/types";
 import type { CanvasDocument } from "@/components/chat/CanvasPanel";
 import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen, Square } from "lucide-react";
@@ -124,6 +126,50 @@ export default function ChatView({ chatId }: ChatViewProps) {
 
     const controller = new AbortController();
     abortRef.current = controller;
+
+    // Route to local Ollama if enabled in Settings
+    const useLocal = isRunningInTauri() && isUsingLocalOllama();
+    const localModel = getLocalOllamaModel();
+
+    if (useLocal && localModel) {
+      await streamQueryOllama(
+        localModel,
+        [
+          { role: "system", content: "Você é um assistente de conhecimento empresarial. Responda de forma clara e objetiva." },
+          { role: "user", content: question },
+        ],
+        {
+          onToken: (token) => {
+            if (!isMountedRef.current) return;
+            streamContentRef.current += token;
+            const currentContent = streamContentRef.current;
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === agentMsgId ? { ...m, content: currentContent } : m
+              )
+            );
+          },
+          onDone: () => {
+            if (!isMountedRef.current) return;
+            setSending(false);
+            abortRef.current = null;
+            const finalContent = streamContentRef.current;
+            if (finalContent) {
+              const doc = parseCanvasContent(agentMsgId, finalContent);
+              if (doc) setCanvasDoc(doc);
+            }
+          },
+          onError: (err) => {
+            if (!isMountedRef.current) return;
+            toast.error(err);
+            setSending(false);
+            abortRef.current = null;
+          },
+        },
+        controller.signal
+      );
+      return;
+    }
 
     await streamQuery(
       {

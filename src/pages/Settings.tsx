@@ -6,9 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowDownToLine, RefreshCw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getApiBase, setApiBase, resetApiBase, getDefaultApiBase, isRunningInTauri } from "@/lib/config";
+import {
+  listOllamaModels,
+  getLocalOllamaModel,
+  isUsingLocalOllama,
+  setUseLocalOllama,
+  setLocalOllamaModel,
+} from "@/lib/local-llm";
 
-const CURRENT_VERSION = "0.1.2";
+const CURRENT_VERSION = "0.1.3";
 const GITHUB_REPO = "cauansousa/info-whisperer-lab";
 
 type UpdateState = "idle" | "checking" | "up-to-date" | "available";
@@ -21,6 +30,9 @@ export default function Settings() {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [checkingOllama, setCheckingOllama] = useState(false);
+  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
+  const [useLocal, setUseLocal] = useState(isUsingLocalOllama);
+  const [localModel, setLocalModel] = useState(getLocalOllamaModel);
   const isTauri = isRunningInTauri();
 
   async function refreshOllama() {
@@ -31,11 +43,30 @@ export default function Settings() {
       const { invoke } = await import("@tauri-apps/api/core");
       const result = await invoke<boolean>("check_ollama");
       setOllamaAvailable(result);
+      if (result) {
+        const models = await listOllamaModels().catch(() => [] as string[]);
+        setOllamaModels(models);
+        if (models.length > 0 && !localModel) {
+          setLocalModel(models[0]);
+          setLocalOllamaModel(models[0]);
+        }
+      }
     } catch {
       setOllamaAvailable(false);
     } finally {
       setCheckingOllama(false);
     }
+  }
+
+  function handleToggleLocal(checked: boolean) {
+    setUseLocal(checked);
+    setUseLocalOllama(checked);
+    toast.success(checked ? "Modo local ativado — queries vão para o Ollama" : "Modo cloud ativado");
+  }
+
+  function handleModelChange(model: string) {
+    setLocalModel(model);
+    setLocalOllamaModel(model);
   }
 
   useEffect(() => {
@@ -177,9 +208,32 @@ export default function Settings() {
               </p>
             )}
             {ollamaAvailable === true && (
-              <p className="text-xs text-muted-foreground">
-                Selecione um modelo Ollama na página de AI Config para usar nos chats.
-              </p>
+              <>
+                {ollamaModels.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-sm">Modelo local</Label>
+                    <Select value={localModel} onValueChange={handleModelChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione um modelo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ollamaModels.map((m) => (
+                          <SelectItem key={m} value={m}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    <p className="text-sm font-medium">Usar Ollama para chats</p>
+                    <p className="text-xs text-muted-foreground">
+                      Queries vão direto para o seu Ollama local, sem passar pelo cloud.
+                    </p>
+                  </div>
+                  <Switch checked={useLocal} onCheckedChange={handleToggleLocal} />
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
