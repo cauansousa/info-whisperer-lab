@@ -10,12 +10,15 @@ async function getToken(): Promise<string> {
   return token;
 }
 
+export const LOCAL_PROVIDER_REQUIRED = "__local_provider_required__";
+
 export interface StreamCallbacks {
   onToken: (token: string) => void;
   onSources?: (sources: SourceItem[]) => void;
   onChatId?: (chatId: string) => void;
   onDone: () => void;
-  onError: (error: string) => void;
+  /** error === LOCAL_PROVIDER_REQUIRED means the agent needs local Ollama */
+  onError: (error: string, meta?: { localModel?: string }) => void;
 }
 
 /**
@@ -49,7 +52,13 @@ export async function streamQuery(
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
-    callbacks.onError(errBody.detail || errBody.message || errBody.error || `API error ${res.status}`);
+    const detail = errBody.detail || errBody.message || errBody.error || `API error ${res.status}`;
+    if (detail === "local_provider_required") {
+      const localModel = res.headers.get("x-local-model") ?? undefined;
+      callbacks.onError(LOCAL_PROVIDER_REQUIRED, { localModel });
+      return;
+    }
+    callbacks.onError(detail);
     return;
   }
 

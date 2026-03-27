@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "0.1.3"
+version = "0.1.4"
 description = "Knowledge AI — Enterprise RAG desktop client"
 authors = ["Cauan Sousa"]
 license = "MIT"

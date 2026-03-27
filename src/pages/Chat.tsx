@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
-import { streamQuery } from "@/lib/stream-query";
+import { streamQuery, LOCAL_PROVIDER_REQUIRED } from "@/lib/stream-query";
 import { isUsingLocalOllama, getLocalOllamaModel, streamQueryOllama } from "@/lib/local-llm";
 import { isRunningInTauri } from "@/lib/config";
 import type { Chat, Agent, ChatMessage, SourceItem } from "@/types";
@@ -209,11 +209,60 @@ export default function ChatView({ chatId }: ChatViewProps) {
             if (doc) setCanvasDoc(doc);
           }
         },
-        onError: (err) => {
+        onError: async (err, meta) => {
+          // Agent is configured with a local provider (Ollama on user's machine).
+          // If running in the desktop app, transparently retry via local Ollama.
+          if (err === LOCAL_PROVIDER_REQUIRED && isRunningInTauri()) {
+            const model = meta?.localModel || getLocalOllamaModel() || "llama3.1:8b";
+            streamContentRef.current = "";
+            await streamQueryOllama(
+              model,
+              [{ role: "user", content: question }],
+              {
+                onToken: (token) => {
+                  if (!isMountedRef.current) return;
+                  streamContentRef.current += token;
+                  const c = streamContentRef.current;
+                  setMessages((prev) =>
+                    prev.map((m) => (m.id === agentMsgId ? { ...m, content: c } : m))
+                  );
+                },
+                onDone: () => {
+                  if (!isMountedRef.current) return;
+                  setSending(false);
+                  abortRef.current = null;
+                  const final = streamContentRef.current;
+                  if (final) {
+                    const doc = parseCanvasContent(agentMsgId, final);
+                    if (doc) setCanvasDoc(doc);
+                  }
+                },
+                onError: (localErr) => {
+                  if (!isMountedRef.current) return;
+                  toast.error(`Ollama local: ${localErr}`);
+                  setSending(false);
+                  abortRef.current = null;
+                  if (!streamContentRef.current)
+                    setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+                },
+              },
+              controller.signal
+            );
+            return;
+          }
+
+          // On web app: show a clear message when agent requires desktop
+          if (err === LOCAL_PROVIDER_REQUIRED) {
+            toast.error("Este agente usa um modelo local. Abra o app desktop para usá-lo.");
+            setSending(false);
+            abortRef.current = null;
+            setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+            return;
+          }
+
           toast.error(err || "Failed to send message");
           setSending(false);
           abortRef.current = null;
-          // Remove the empty agent message on error
           if (!streamContentRef.current) {
             setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
           }

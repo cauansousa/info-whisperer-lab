@@ -17,7 +17,7 @@ import {
   setLocalOllamaModel,
 } from "@/lib/local-llm";
 
-const CURRENT_VERSION = "0.1.3";
+const CURRENT_VERSION = "0.1.4";
 const GITHUB_REPO = "cauansousa/info-whisperer-lab";
 
 type UpdateState = "idle" | "checking" | "up-to-date" | "available";
