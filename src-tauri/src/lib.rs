@@ -4,13 +4,14 @@ fn check_ollama() -> bool {
     use std::time::Duration;
 
     // Primary check: is Ollama's HTTP port open?
-    if TcpStream::connect_timeout(
-        &"127.0.0.1:11434".parse().unwrap(),
-        Duration::from_millis(500),
-    )
-    .is_ok()
-    {
-        return true;
+    // Try both 127.0.0.1 and [::1] (IPv6 loopback) since macOS may use either
+    let addrs = ["127.0.0.1:11434", "[::1]:11434"];
+    for addr in &addrs {
+        if let Ok(parsed) = addr.parse() {
+            if TcpStream::connect_timeout(&parsed, Duration::from_millis(1500)).is_ok() {
+                return true;
+            }
+        }
     }
 
     // Fallback: try common install paths for the CLI

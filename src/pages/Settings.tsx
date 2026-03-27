@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { ArrowDownToLine, RefreshCw } from "lucide-react";
 import { getApiBase, setApiBase, resetApiBase, getDefaultApiBase, isRunningInTauri } from "@/lib/config";
 
-const CURRENT_VERSION = "0.1.1";
+const CURRENT_VERSION = "0.1.2";
 const GITHUB_REPO = "cauansousa/info-whisperer-lab";
 
 type UpdateState = "idle" | "checking" | "up-to-date" | "available";
@@ -20,14 +20,27 @@ export default function Settings() {
   const [updateState, setUpdateState] = useState<UpdateState>("idle");
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [checkingOllama, setCheckingOllama] = useState(false);
   const isTauri = isRunningInTauri();
 
-  useEffect(() => {
+  async function refreshOllama() {
     if (!isTauri) return;
-    import("@tauri-apps/api/core")
-      .then(({ invoke }) => invoke<boolean>("check_ollama"))
-      .then(setOllamaAvailable)
-      .catch(() => setOllamaAvailable(false));
+    setCheckingOllama(true);
+    setOllamaAvailable(null);
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const result = await invoke<boolean>("check_ollama");
+      setOllamaAvailable(result);
+    } catch {
+      setOllamaAvailable(false);
+    } finally {
+      setCheckingOllama(false);
+    }
+  }
+
+  useEffect(() => {
+    refreshOllama();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTauri]);
 
   async function checkForUpdate() {
@@ -142,20 +155,30 @@ export default function Settings() {
           <CardContent className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Status:</span>
-              {ollamaAvailable === null && <Badge variant="outline">Checking…</Badge>}
-              {ollamaAvailable === true && <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Ollama detected</Badge>}
-              {ollamaAvailable === false && <Badge variant="secondary">Not found</Badge>}
+              {ollamaAvailable === null && <Badge variant="outline">Verificando…</Badge>}
+              {ollamaAvailable === true && <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Ollama detectado</Badge>}
+              {ollamaAvailable === false && <Badge variant="secondary">Não encontrado</Badge>}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refreshOllama}
+                disabled={checkingOllama || ollamaAvailable === null}
+                className="h-6 w-6 p-0"
+                title="Verificar novamente"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${checkingOllama ? "animate-spin" : ""}`} />
+              </Button>
             </div>
             {ollamaAvailable === false && (
               <p className="text-xs text-muted-foreground">
-                Install Ollama from{" "}
-                <span className="font-mono">ollama.com</span> to use local models.
-                After installing, restart the app.
+                Instale o Ollama em{" "}
+                <span className="font-mono">ollama.com</span> para usar modelos locais.
+                Após instalar, clique no botão de refresh acima.
               </p>
             )}
             {ollamaAvailable === true && (
               <p className="text-xs text-muted-foreground">
-                Select an Ollama model from the AI Config page to use it in chats.
+                Selecione um modelo Ollama na página de AI Config para usar nos chats.
               </p>
             )}
           </CardContent>
