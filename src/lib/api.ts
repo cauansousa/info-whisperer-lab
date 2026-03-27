@@ -7,7 +7,8 @@ import type {
 } from "@/types";
 
 /* ── Service hosts ── */
-const API_BASE         = "https://api.knowledge.cauansousa.com";
+import { getApiBase } from "@/lib/config";
+const API_BASE         = getApiBase();
 const AUTH_BASE        = `${API_BASE}/auth`;
 const GOVERNANCE_BASE  = `${API_BASE}/governance`;
 const INGESTION_BASE   = `${API_BASE}/ingest`;

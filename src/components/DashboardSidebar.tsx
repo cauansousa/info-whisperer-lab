@@ -1,4 +1,5 @@
-import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings, UserPlus } from "lucide-react";
+import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings, UserPlus, SlidersHorizontal } from "lucide-react";
+import { isRunningInTauri } from "@/lib/config";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +20,9 @@ const mainItems = [
   { title: "Chat", url: "/app", icon: MessageSquare, minRole: "member" as const },
   { title: "My Libraries", url: "/app/libraries", icon: BookOpen, minRole: "member" as const },
   { title: "My Agents", url: "/app/agents", icon: Bot, minRole: "member" as const },
+  ...(isRunningInTauri()
+    ? [{ title: "Settings", url: "/app/settings", icon: SlidersHorizontal, minRole: "member" as const }]
+    : []),
 ];
 
 const adminItems = [

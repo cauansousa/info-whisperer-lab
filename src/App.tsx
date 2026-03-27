@@ -27,6 +27,7 @@ import Signup from "./pages/Signup";
 import OAuthCallback from "./pages/OAuthCallback";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="libraries" element={<UserLibraries />} />
               <Route path="libraries/:libraryId" element={<LibraryDetail />} />
               <Route path="agents" element={<UserAgents />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
 
             <Route path="/admin" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
