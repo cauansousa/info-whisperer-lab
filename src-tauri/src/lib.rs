@@ -1,10 +1,31 @@
 #[tauri::command]
 fn check_ollama() -> bool {
-    std::process::Command::new("ollama")
-        .arg("list")
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
+    use std::net::TcpStream;
+    use std::time::Duration;
+
+    // Primary check: is Ollama's HTTP port open?
+    if TcpStream::connect_timeout(
+        &"127.0.0.1:11434".parse().unwrap(),
+        Duration::from_millis(500),
+    )
+    .is_ok()
+    {
+        return true;
+    }
+
+    // Fallback: try common install paths for the CLI
+    let paths = [
+        "/usr/local/bin/ollama",
+        "/opt/homebrew/bin/ollama",
+        "/usr/bin/ollama",
+    ];
+    paths.iter().any(|p| {
+        std::process::Command::new(p)
+            .arg("list")
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    })
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
