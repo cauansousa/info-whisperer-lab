@@ -26,12 +26,10 @@ export default function UserLibraries() {
   const [description, setDescription] = useState("");
 
   const loadLibraries = async () => {
-    const [all, allowed] = await Promise.all([
-      api.getLibraries(),
+    const [mine, allowed] = await Promise.all([
+      api.getLibraries({ mine: true }),
       api.getAllowedLibraries(),
     ]);
-    const userId = me?.user_id;
-    const mine = all.filter((l) => l.created_by === userId);
     const mineIds = new Set(mine.map((l) => l.id));
     const sharedIds = allowed.library_ids.filter((id: string) => !mineIds.has(id));
     const shared = await Promise.all(

@@ -102,7 +102,8 @@ export const api = {
   getTenantInvitations: () => apiFetch<Invitation[]>(AUTH_BASE, "/invitations"),
 
   // ─── Governance service ───
-  getLibraries: () => apiFetch<Library[]>(GOVERNANCE_BASE, "/libraries"),
+  getLibraries: (params?: { mine?: boolean }) =>
+    apiFetch<Library[]>(GOVERNANCE_BASE, `/libraries${params?.mine ? "?mine=true" : ""}`),
   createLibrary: (name: string, description?: string, system_prompt?: string) =>
     apiFetch<Library>(GOVERNANCE_BASE, "/libraries", {
       method: "POST", body: JSON.stringify({ name, description, system_prompt }),

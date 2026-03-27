@@ -67,24 +67,35 @@ export default function LibraryDetail() {
     Promise.all([
       api.getLibrary(libraryId),
       api.getDocuments(libraryId),
-      api.getLibraryPermissions(libraryId),
-      api.getUsers(),
       api.getConnections(libraryId).catch(() => {
         setConnectorsAvailable(false);
         return [] as DriveConnection[];
       }),
     ])
-      .then(([lib, docs, perms, u, conns]) => {
+      .then(([lib, docs, conns]) => {
         setLibrary(lib);
         setSystemPrompt(lib.system_prompt || "");
         setDocuments(docs);
-        setPermissions(perms);
-        setUsers(u);
         setConnections(conns);
+
+        // Only fetch permissions and users when the caller can manage the library.
+        // Both endpoints return 403 for users with only read-level access.
+        const canManage = lib.created_by === me?.user_id || hasRole("admin");
+        if (canManage) {
+          Promise.all([
+            api.getLibraryPermissions(libraryId),
+            api.getUsers(),
+          ])
+            .then(([perms, u]) => {
+              setPermissions(perms);
+              setUsers(u);
+            })
+            .catch(() => {}); // Permissions tab is hidden for non-managers, so silently skip
+        }
       })
       .catch(() => toast.error("Failed to load library"))
       .finally(() => setLoading(false));
-  }, [libraryId]);
+  }, [libraryId, me, hasRole]);
 
   // Polling for processing docs
   useEffect(() => {
