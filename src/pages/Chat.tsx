@@ -2,7 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { streamQuery, LOCAL_PROVIDER_REQUIRED } from "@/lib/stream-query";
-import { isUsingLocalOllama, getLocalOllamaModel, streamQueryOllama } from "@/lib/local-llm";
+import {
+  isUsingLocalOllama, getLocalOllamaModel, setLocalOllamaModel,
+  listOllamaModels, streamQueryOllama,
+} from "@/lib/local-llm";
 import { isRunningInTauri } from "@/lib/config";
 import type { Chat, Agent, ChatMessage, SourceItem } from "@/types";
 import type { CanvasDocument } from "@/components/chat/CanvasPanel";
@@ -54,6 +57,15 @@ export default function ChatView({ chatId }: ChatViewProps) {
       .then(setChats)
       .catch(() => {})
       .finally(() => setLoadingChats(false));
+
+    // Desktop: auto-detect Ollama model on startup if none saved yet
+    if (isRunningInTauri() && !getLocalOllamaModel()) {
+      listOllamaModels()
+        .then((models) => {
+          if (models.length > 0) setLocalOllamaModel(models[0]);
+        })
+        .catch(() => {});
+    }
   }, []);
 
   useEffect(() => {

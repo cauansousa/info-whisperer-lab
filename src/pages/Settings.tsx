@@ -226,9 +226,9 @@ export default function Settings() {
                 )}
                 <div className="flex items-center justify-between pt-1">
                   <div>
-                    <p className="text-sm font-medium">Usar Ollama para chats</p>
+                    <p className="text-sm font-medium">Usar Ollama local para chats</p>
                     <p className="text-xs text-muted-foreground">
-                      Queries vão direto para o seu Ollama local, sem passar pelo cloud.
+                      Ativo por padrão. Desative para forçar o cloud backend.
                     </p>
                   </div>
                   <Switch checked={useLocal} onCheckedChange={handleToggleLocal} />

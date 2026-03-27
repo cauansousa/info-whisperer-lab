@@ -11,8 +11,15 @@ export function getLocalOllamaModel(): string {
   return localStorage.getItem(LOCAL_OLLAMA_MODEL_KEY) ?? "";
 }
 
+/**
+ * In the desktop app, local Ollama is ON by default when a model is configured.
+ * The toggle in Settings lets the user explicitly force cloud if desired.
+ * Returns false only when the user has explicitly set it to "false".
+ */
 export function isUsingLocalOllama(): boolean {
-  return localStorage.getItem(USE_LOCAL_OLLAMA_KEY) === "true";
+  const saved = localStorage.getItem(USE_LOCAL_OLLAMA_KEY);
+  if (saved === null) return true;   // default ON (not yet set by user)
+  return saved === "true";
 }
 
 export function setUseLocalOllama(value: boolean) {
