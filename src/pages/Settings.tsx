@@ -5,12 +5,21 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { ArrowDownToLine, RefreshCw } from "lucide-react";
 import { getApiBase, setApiBase, resetApiBase, getDefaultApiBase, isRunningInTauri } from "@/lib/config";
+
+const CURRENT_VERSION = "0.1.1";
+const GITHUB_REPO = "cauansousa/info-whisperer-lab";
+
+type UpdateState = "idle" | "checking" | "up-to-date" | "available";
 
 export default function Settings() {
   const [apiUrl, setApiUrl] = useState(getApiBase());
   const [testing, setTesting] = useState(false);
   const [ollamaAvailable, setOllamaAvailable] = useState<boolean | null>(null);
+  const [updateState, setUpdateState] = useState<UpdateState>("idle");
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const isTauri = isRunningInTauri();
 
   useEffect(() => {
@@ -20,6 +29,39 @@ export default function Settings() {
       .then(setOllamaAvailable)
       .catch(() => setOllamaAvailable(false));
   }, [isTauri]);
+
+  async function checkForUpdate() {
+    setUpdateState("checking");
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+      const data = await res.json();
+      const latest: string = (data.tag_name ?? "").replace(/^v/, "");
+      setLatestVersion(latest);
+
+      // Find the right asset for this platform
+      const isMac = navigator.userAgent.includes("Mac");
+      const asset = (data.assets ?? []).find((a: { name: string }) =>
+        isMac ? a.name.endsWith(".dmg") : a.name.endsWith(".exe")
+      );
+      setDownloadUrl(asset?.browser_download_url ?? data.html_url);
+
+      if (latest && latest !== CURRENT_VERSION) {
+        setUpdateState("available");
+      } else {
+        setUpdateState("up-to-date");
+      }
+    } catch {
+      toast.error("Could not check for updates");
+      setUpdateState("idle");
+    }
+  }
+
+  function openDownload() {
+    if (downloadUrl) window.open(downloadUrl, "_blank");
+  }
 
   async function handleTest() {
     setTesting(true);
@@ -120,13 +162,61 @@ export default function Settings() {
         </Card>
       )}
 
+      {isTauri && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Updates</CardTitle>
+            <CardDescription>
+              Check if there is a newer version of Knowledge AI available.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">Current version:</span>
+              <Badge variant="outline" className="font-mono">v{CURRENT_VERSION}</Badge>
+            </div>
+
+            {updateState === "up-to-date" && (
+              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                You're up to date
+              </Badge>
+            )}
+
+            {updateState === "available" && latestVersion && (
+              <div className="flex items-center gap-3">
+                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                  v{latestVersion} available
+                </Badge>
+                <Button size="sm" onClick={openDownload} className="gap-2">
+                  <ArrowDownToLine className="h-4 w-4" />
+                  Download update
+                </Button>
+              </div>
+            )}
+
+            {(updateState === "idle" || updateState === "up-to-date") && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={checkForUpdate}
+                disabled={updateState === "checking"}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${updateState === "checking" ? "animate-spin" : ""}`} />
+                {updateState === "checking" ? "Checking…" : "Check for updates"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>About</CardTitle>
         </CardHeader>
         <CardContent className="space-y-1 text-sm text-muted-foreground">
           <p>Knowledge AI</p>
-          {isTauri && <p className="font-mono text-xs">Desktop client</p>}
+          {isTauri && <p className="font-mono text-xs">Desktop client v{CURRENT_VERSION}</p>}
           {!isTauri && <p className="font-mono text-xs">Web client</p>}
         </CardContent>
       </Card>
