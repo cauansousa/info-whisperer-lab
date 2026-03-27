@@ -59,7 +59,7 @@ jobs:
           releaseBody: |
             ## What's new
             See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           tauriScript: npm run tauri
           args: ${{ matrix.args }}
