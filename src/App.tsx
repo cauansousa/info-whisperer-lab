@@ -28,6 +28,7 @@ import OAuthCallback from "./pages/OAuthCallback";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Settings from "./pages/Settings";
+import DownloadPage from "./pages/Download";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/oauth-callback" element={<OAuthCallback />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/download" element={<DownloadPage />} />
 
             {/* Protected dashboard routes */}
             <Route path="/app" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

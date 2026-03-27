@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const navItems = [
   { label: "Funcionalidades", href: "#funcionalidades" },
@@ -79,14 +80,27 @@ const Navbar = () => {
                 ))}
               </nav>
 
-              {/* Bottom CTA */}
-              <div className="border-t border-border/30 p-6">
+              {/* Bottom CTAs */}
+              <div className="border-t border-border/30 p-6 flex flex-col gap-2">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.28 }}
+                >
+                  <Link
+                    to="/download"
+                    onClick={() => setOpen(false)}
+                    className="flex w-full items-center justify-center rounded-lg border border-border/40 bg-secondary/40 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary/70"
+                  >
+                    Download
+                  </Link>
+                </motion.div>
                 <motion.a
                   href="/login"
                   onClick={() => setOpen(false)}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
+                  transition={{ delay: 0.35 }}
                   className="flex w-full items-center justify-center rounded-lg bg-foreground px-4 py-3 text-sm font-medium text-background transition-opacity hover:opacity-80"
                 >
                   Entrar
