@@ -30,9 +30,9 @@ function getAsset(assets: ReleaseAsset[], ext: string): ReleaseAsset | undefined
 }
 
 const features = [
-  "Chat com IA usando os teus dados",
+  "Chat com IA usando seus dados",
   "Bibliotecas de conhecimento privadas",
-  "Agentes configuráveis por equipa",
+  "Agentes configuráveis por equipe",
   "Suporte a modelos locais via Ollama",
   "Funciona com backend cloud ou on-premise",
 ];
@@ -64,7 +64,7 @@ export default function DownloadPage() {
 
   const version = release?.tag_name ?? "—";
   const releaseDate = release
-    ? new Intl.DateTimeFormat("pt-PT", { dateStyle: "long" }).format(new Date(release.published_at))
+    ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date(release.published_at))
     : null;
 
   return (
@@ -95,14 +95,14 @@ export default function DownloadPage() {
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-border/40 bg-secondary/30 px-4 py-1.5 text-xs text-muted-foreground mb-8">
             <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-            {loading ? "A verificar versão…" : error ? "Versão não disponível" : `Versão ${version} · ${releaseDate}`}
+            {loading ? "Verificando versão…" : error ? "Versão não disponível" : `Versão ${version} · ${releaseDate}`}
           </div>
 
           <h1 className="font-display text-4xl font-bold tracking-tight mb-4">
             Download Knowledge AI
           </h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            A plataforma de conhecimento empresarial. Instala em segundos, funciona offline com Ollama ou liga ao teu backend cloud.
+            A plataforma de conhecimento empresarial. Instale em segundos, funciona offline com Ollama ou conecte ao seu backend cloud.
           </p>
         </motion.div>
 
@@ -126,7 +126,7 @@ export default function DownloadPage() {
             </a>
           ) : (
             <div className="flex items-center gap-3 rounded-2xl border border-border/40 bg-secondary/20 px-8 py-4 text-muted-foreground text-lg">
-              {loading ? "A carregar…" : os === "linux" ? "Linux ainda não suportado" : "Sem versão publicada"}
+              {loading ? "Carregando…" : os === "linux" ? "Linux ainda não suportado" : "Sem versão publicada"}
             </div>
           )}
 
@@ -200,9 +200,9 @@ export default function DownloadPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center text-sm text-muted-foreground mt-12"
         >
-          Preferes usar no browser?{" "}
+          Prefere usar no navegador?{" "}
           <Link to="/login" className="text-foreground underline underline-offset-2 hover:no-underline">
-            Acede à versão web
+            Acesse a versão web
           </Link>
         </motion.p>
       </main>
