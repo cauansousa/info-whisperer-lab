@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
-import { streamQuery, LOCAL_PROVIDER_REQUIRED } from "@/lib/stream-query";
+import {
+  streamQuery,
+  LOCAL_PROVIDER_REQUIRED,
+  prepareContext,
+  persistLocalResponse,
+} from "@/lib/stream-query";
 import {
   isUsingLocalOllama, getLocalOllamaModel, setLocalOllamaModel,
   listOllamaModels, streamQueryOllama,
@@ -44,6 +49,8 @@ export default function ChatView({ chatId }: ChatViewProps) {
   const messagesEnd = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamContentRef = useRef("");
+  const isMountedRef = useRef(true);
+  useEffect(() => () => { isMountedRef.current = false; }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEnd.current?.scrollIntoView({ behavior: "smooth" });
@@ -144,42 +151,70 @@ export default function ChatView({ chatId }: ChatViewProps) {
     const localModel = getLocalOllamaModel();
 
     if (useLocal && localModel) {
-      await streamQueryOllama(
-        localModel,
-        [
-          { role: "system", content: "Você é um assistente de conhecimento empresarial. Responda de forma clara e objetiva." },
-          { role: "user", content: question },
-        ],
-        {
-          onToken: (token) => {
-            if (!isMountedRef.current) return;
-            streamContentRef.current += token;
-            const currentContent = streamContentRef.current;
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === agentMsgId ? { ...m, content: currentContent } : m
-              )
-            );
+      try {
+        // 1. Run full RAG pipeline on backend — returns messages with document context
+        const ctx = await prepareContext({
+          question,
+          agent_id: (selectedAgent && selectedAgent !== "__none__") ? selectedAgent : null,
+          chat_id: chatId || null,
+        });
+
+        // Navigate to newly created chat
+        if (!chatId) {
+          navigate(`/app/chat/${ctx.chat_id}`, { replace: true });
+          api.getChats().then(setChats);
+        }
+
+        // Show sources immediately
+        if (ctx.sources?.length) {
+          setSources((prev) => ({ ...prev, [agentMsgId]: ctx.sources }));
+        }
+
+        // 2. Stream inference locally via Ollama (with RAG context in messages)
+        await streamQueryOllama(
+          ctx.local_model || localModel,
+          ctx.messages,
+          {
+            onToken: (token) => {
+              if (!isMountedRef.current) return;
+              streamContentRef.current += token;
+              const currentContent = streamContentRef.current;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === agentMsgId ? { ...m, content: currentContent } : m
+                )
+              );
+            },
+            onDone: async () => {
+              if (!isMountedRef.current) return;
+              setSending(false);
+              abortRef.current = null;
+              const finalContent = streamContentRef.current;
+              if (finalContent) {
+                const doc = parseCanvasContent(agentMsgId, finalContent);
+                if (doc) setCanvasDoc(doc);
+                // 3. Persist agent answer to backend (non-blocking)
+                persistLocalResponse(ctx.chat_id, question, finalContent, ctx.sources);
+              }
+            },
+            onError: (err) => {
+              if (!isMountedRef.current) return;
+              toast.error(`Ollama: ${err}`);
+              setSending(false);
+              abortRef.current = null;
+              if (!streamContentRef.current)
+                setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+            },
           },
-          onDone: () => {
-            if (!isMountedRef.current) return;
-            setSending(false);
-            abortRef.current = null;
-            const finalContent = streamContentRef.current;
-            if (finalContent) {
-              const doc = parseCanvasContent(agentMsgId, finalContent);
-              if (doc) setCanvasDoc(doc);
-            }
-          },
-          onError: (err) => {
-            if (!isMountedRef.current) return;
-            toast.error(err);
-            setSending(false);
-            abortRef.current = null;
-          },
-        },
-        controller.signal
-      );
+          controller.signal
+        );
+      } catch (err: any) {
+        if (!isMountedRef.current) return;
+        toast.error(err?.message || "Erro ao preparar contexto RAG");
+        setSending(false);
+        abortRef.current = null;
+        setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+      }
       return;
     }
 

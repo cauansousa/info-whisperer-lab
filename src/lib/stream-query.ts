@@ -1,5 +1,6 @@
 import { authSupabase } from "@/lib/auth-client";
 import type { QueryRequest, SourceItem } from "@/types";
+import type { OllamaMessage } from "@/lib/local-llm";
 
 const MODEL_BASE = "https://api.knowledge.cauansousa.com/model";
 
@@ -171,4 +172,74 @@ export async function streamQuery(
     if (err.name === "AbortError") return;
     callbacks.onError(err.message || "Stream error");
   }
+}
+
+// ─── Local inference helpers ──────────────────────────────────────────────────
+
+export interface PrepareContextResult {
+  chat_id: string;
+  agent_id?: string | null;
+  messages: OllamaMessage[];
+  sources: SourceItem[];
+  local_model?: string | null;
+}
+
+/**
+ * Calls /model/prepare_context to run the full RAG pipeline on the backend.
+ * Returns the augmented messages array ready to pass to local Ollama.
+ * Also creates the chat record and persists the user message.
+ */
+export async function prepareContext(params: {
+  question: string;
+  agent_id?: string | null;
+  library_ids?: string[];
+  chat_id?: string | null;
+}): Promise<PrepareContextResult> {
+  const token = await getToken();
+
+  const res = await fetch(`${MODEL_BASE}/prepare_context`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (res.status === 401) {
+    window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.detail || errBody.message || `API error ${res.status}`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Calls /model/chats/{chat_id}/persist_local to save the answer from local Ollama.
+ * Should be called after streaming completes.
+ */
+export async function persistLocalResponse(
+  chat_id: string,
+  question: string,
+  answer: string,
+  sources: SourceItem[],
+): Promise<void> {
+  const token = await getToken();
+
+  await fetch(`${MODEL_BASE}/chats/${chat_id}/persist_local`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ question, answer, sources }),
+  }).catch(() => {
+    // Non-critical — don't break the UX if persistence fails
+    console.warn("[KnowledgeAI] persist_local failed — answer not saved to history");
+  });
 }
