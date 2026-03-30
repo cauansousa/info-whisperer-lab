@@ -157,19 +157,13 @@ export default function ChatView({ chatId }: ChatViewProps) {
         if (models.length > 0) {
           setLocalOllamaModel(models[0]);
           localModel = models[0];
+        } else {
+          localModel = "llama3.2";
         }
       } catch {
-        // Ollama unreachable — will show error below
+        // Ollama may still be reachable — use hardcoded fallback and let streamQueryOllama fail if not
+        localModel = "llama3.2";
       }
-    }
-
-    // If local mode is ON but Ollama is unavailable, show clear error (never fall through to cloud)
-    if (useLocal && !localModel) {
-      toast.error("Ollama não encontrado. Abra o Ollama e configure um modelo em Settings, ou desative o modo local.");
-      setSending(false);
-      abortRef.current = null;
-      setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
-      return;
     }
 
     if (useLocal && localModel) {
@@ -230,12 +224,43 @@ export default function ChatView({ chatId }: ChatViewProps) {
           },
           controller.signal
         );
-      } catch (err: any) {
+      } catch {
+        // prepareContext failed (backend error, network, etc.)
+        // Degrade gracefully: call Ollama without RAG context so the user can still chat
         if (!isMountedRef.current) return;
-        toast.error(err?.message || "Erro ao preparar contexto RAG");
-        setSending(false);
-        abortRef.current = null;
-        setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+        await streamQueryOllama(
+          localModel,
+          [{ role: "user", content: question }],
+          {
+            onToken: (token) => {
+              if (!isMountedRef.current) return;
+              streamContentRef.current += token;
+              const c = streamContentRef.current;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === agentMsgId ? { ...m, content: c } : m))
+              );
+            },
+            onDone: () => {
+              if (!isMountedRef.current) return;
+              setSending(false);
+              abortRef.current = null;
+              const final = streamContentRef.current;
+              if (final) {
+                const doc = parseCanvasContent(agentMsgId, final);
+                if (doc) setCanvasDoc(doc);
+              }
+            },
+            onError: (ollamaErr) => {
+              if (!isMountedRef.current) return;
+              toast.error(`Ollama: ${ollamaErr}`);
+              setSending(false);
+              abortRef.current = null;
+              if (!streamContentRef.current)
+                setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+            },
+          },
+          controller.signal
+        );
       }
       return;
     }
