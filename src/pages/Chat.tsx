@@ -284,39 +284,61 @@ export default function ChatView({ chatId }: ChatViewProps) {
           if (err === LOCAL_PROVIDER_REQUIRED && isRunningInTauri()) {
             const model = meta?.localModel || getLocalOllamaModel() || "llama3.1:8b";
             streamContentRef.current = "";
-            await streamQueryOllama(
-              model,
-              [{ role: "user", content: question }],
-              {
-                onToken: (token) => {
-                  if (!isMountedRef.current) return;
-                  streamContentRef.current += token;
-                  const c = streamContentRef.current;
-                  setMessages((prev) =>
-                    prev.map((m) => (m.id === agentMsgId ? { ...m, content: c } : m))
-                  );
+            try {
+              // Run full RAG pipeline on backend before calling local Ollama
+              const ctx = await prepareContext({
+                question,
+                agent_id: (selectedAgent && selectedAgent !== "__none__") ? selectedAgent : null,
+                chat_id: chatId || null,
+              });
+              if (!chatId) {
+                navigate(`/app/chat/${ctx.chat_id}`, { replace: true });
+                api.getChats().then(setChats);
+              }
+              if (ctx.sources?.length) {
+                setSources((prev) => ({ ...prev, [agentMsgId]: ctx.sources }));
+              }
+              await streamQueryOllama(
+                ctx.local_model || model,
+                ctx.messages,
+                {
+                  onToken: (token) => {
+                    if (!isMountedRef.current) return;
+                    streamContentRef.current += token;
+                    const c = streamContentRef.current;
+                    setMessages((prev) =>
+                      prev.map((m) => (m.id === agentMsgId ? { ...m, content: c } : m))
+                    );
+                  },
+                  onDone: async () => {
+                    if (!isMountedRef.current) return;
+                    setSending(false);
+                    abortRef.current = null;
+                    const final = streamContentRef.current;
+                    if (final) {
+                      const doc = parseCanvasContent(agentMsgId, final);
+                      if (doc) setCanvasDoc(doc);
+                      persistLocalResponse(ctx.chat_id, question, final, ctx.sources);
+                    }
+                  },
+                  onError: (localErr) => {
+                    if (!isMountedRef.current) return;
+                    toast.error(`Ollama local: ${localErr}`);
+                    setSending(false);
+                    abortRef.current = null;
+                    if (!streamContentRef.current)
+                      setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+                  },
                 },
-                onDone: () => {
-                  if (!isMountedRef.current) return;
-                  setSending(false);
-                  abortRef.current = null;
-                  const final = streamContentRef.current;
-                  if (final) {
-                    const doc = parseCanvasContent(agentMsgId, final);
-                    if (doc) setCanvasDoc(doc);
-                  }
-                },
-                onError: (localErr) => {
-                  if (!isMountedRef.current) return;
-                  toast.error(`Ollama local: ${localErr}`);
-                  setSending(false);
-                  abortRef.current = null;
-                  if (!streamContentRef.current)
-                    setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
-                },
-              },
-              controller.signal
-            );
+                controller.signal
+              );
+            } catch (ragErr: any) {
+              if (!isMountedRef.current) return;
+              toast.error(ragErr?.message || "Erro ao preparar contexto RAG");
+              setSending(false);
+              abortRef.current = null;
+              setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+            }
             return;
           }
 
