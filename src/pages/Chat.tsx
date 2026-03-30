@@ -148,7 +148,29 @@ export default function ChatView({ chatId }: ChatViewProps) {
 
     // Route to local Ollama if enabled in Settings
     const useLocal = isRunningInTauri() && isUsingLocalOllama();
-    const localModel = getLocalOllamaModel();
+    let localModel = getLocalOllamaModel();
+
+    // If local mode is ON but no model saved yet, try to detect on-demand
+    if (useLocal && !localModel) {
+      try {
+        const models = await listOllamaModels();
+        if (models.length > 0) {
+          setLocalOllamaModel(models[0]);
+          localModel = models[0];
+        }
+      } catch {
+        // Ollama unreachable — will show error below
+      }
+    }
+
+    // If local mode is ON but Ollama is unavailable, show clear error (never fall through to cloud)
+    if (useLocal && !localModel) {
+      toast.error("Ollama não encontrado. Abra o Ollama e configure um modelo em Settings, ou desative o modo local.");
+      setSending(false);
+      abortRef.current = null;
+      setMessages((prev) => prev.filter((m) => m.id !== agentMsgId));
+      return;
+    }
 
     if (useLocal && localModel) {
       try {
