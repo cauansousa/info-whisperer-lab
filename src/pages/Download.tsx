@@ -175,6 +175,65 @@ export default function DownloadPage() {
           )}
         </motion.div>
 
+        {/* Installation steps */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+          className="rounded-2xl border border-border/30 bg-secondary/10 p-8 mb-8"
+        >
+          <h2 className="font-display text-lg font-semibold mb-6 text-center">
+            Como instalar
+          </h2>
+
+          {os === "mac" ? (
+            <ol className="space-y-5 max-w-lg mx-auto">
+              {[
+                { n: 1, text: "Faz download do ficheiro .dmg acima" },
+                { n: 2, text: 'Abre o .dmg e arrasta Knowledge AI para a pasta Applications' },
+                { n: 3, text: null },
+                { n: 4, text: "Abre o app normalmente — duplo clique em Applications" },
+              ].map(({ n, text }) => (
+                <li key={n} className="flex gap-4">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/40 bg-secondary/30 text-xs font-medium">
+                    {n}
+                  </span>
+                  {text ? (
+                    <span className="text-sm text-muted-foreground pt-0.5">{text}</span>
+                  ) : (
+                    <div className="flex-1 pt-0.5">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Como o app não está notarizado pela Apple, executa este comando no <strong className="text-foreground">Terminal</strong> antes de abrir:
+                      </p>
+                      <div className="flex items-center gap-2 rounded-lg bg-background border border-border/40 px-4 py-2.5 font-mono text-xs text-foreground/80 select-all cursor-text">
+                        xattr -dr com.apple.quarantine /Applications/Knowledge\ AI.app
+                      </div>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
+          ) : os === "windows" ? (
+            <ol className="space-y-5 max-w-lg mx-auto">
+              {[
+                "Faz download do ficheiro .exe acima",
+                "Executa o instalador",
+                'Se o Windows Defender bloquear, clica em "Mais informações" → "Executar mesmo assim"',
+                "Segue o assistente de instalação e abre o app",
+              ].map((text, i) => (
+                <li key={i} className="flex gap-4">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border/40 bg-secondary/30 text-xs font-medium">
+                    {i + 1}
+                  </span>
+                  <span className="text-sm text-muted-foreground pt-0.5">{text}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center">Linux ainda não é suportado oficialmente.</p>
+          )}
+        </motion.div>
+
         {/* Features */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
