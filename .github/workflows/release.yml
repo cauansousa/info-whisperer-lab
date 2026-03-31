@@ -57,8 +57,24 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "Knowledge AI ${{ github.ref_name }}"
           releaseBody: |
+            ## Instalação
+
+            ### macOS
+            1. Faz download do ficheiro `.dmg`
+            2. Abre o `.dmg` e arrasta **Knowledge AI** para `/Applications`
+            3. Como o app não está notarizado pela Apple, executa este comando no Terminal antes de abrir:
+            ```bash
+            xattr -dr com.apple.quarantine /Applications/Knowledge\ AI.app
+            ```
+            4. Abre o app normalmente
+
+            ### Windows
+            1. Faz download do `.exe` e executa o instalador
+            2. Se o Windows Defender bloquear, clica em **More info → Run anyway**
+
+            ---
             ## What's new
-            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+            See commits desde a versão anterior para detalhes das mudanças.
           releaseDraft: false
           prerelease: false
           tauriScript: npm run tauri
