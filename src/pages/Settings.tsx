@@ -195,7 +195,7 @@ export default function Settings() {
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Status:</span>
               {ollamaAvailable === null && <Badge variant="outline">Verificando…</Badge>}
-              {ollamaAvailable === true && <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Ollama detectado</Badge>}
+              {ollamaAvailable === true && <Badge className="bg-[hsl(142,76%,36%)]/20 text-[hsl(142,76%,46%)] border-[hsl(142,76%,36%)]/30">Ollama detectado</Badge>}
               {ollamaAvailable === false && <Badge variant="secondary">Não encontrado</Badge>}
               <Button
                 variant="ghost"
