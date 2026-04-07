@@ -519,10 +519,10 @@ export default function ChatView({ chatId }: ChatViewProps) {
         <div className="border-b border-border/30 px-4 py-2">
           <Select value={selectedAgent} onValueChange={setSelectedAgent}>
             <SelectTrigger className="w-56 bg-secondary/20 border-border/30 h-8 text-xs">
-              <SelectValue placeholder="Select an agent (optional)" />
+              <SelectValue placeholder="Selecione um agente (opcional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none__">All libraries (no agent)</SelectItem>
+              <SelectItem value="__none__">Todas as bibliotecas (sem agente)</SelectItem>
               {agents.map((a) => (
                 <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
               ))}
@@ -535,9 +535,21 @@ export default function ChatView({ chatId }: ChatViewProps) {
           {loadingMessages ? (
             <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-3/4" />)}</div>
           ) : messages.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-              <Bot className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm">Ask anything...</p>
+            <div className="flex h-full flex-col items-center justify-center text-muted-foreground max-w-md mx-auto">
+              <Sparkles className="mb-4 h-12 w-12 opacity-20" />
+              <h2 className="text-lg font-semibold text-foreground mb-1">Olá! Como posso ajudar?</h2>
+              <p className="text-sm text-center mb-6">Faça uma pergunta sobre seus documentos ou escolha uma sugestão abaixo.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleSuggestion(s)}
+                    className="rounded-lg border border-border/30 bg-secondary/20 px-3 py-2.5 text-xs text-left text-muted-foreground hover:bg-secondary/40 hover:text-foreground transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             messages.map((msg) => (
@@ -561,7 +573,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
                   )}
                   {sources[msg.id] && (
                     <div className="mt-2 border-t border-border/20 pt-2">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Sources</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Fontes</p>
                       {sources[msg.id].map((s, i) => (
                         <p key={i} className="text-xs text-muted-foreground">📄 {s.document_title}</p>
                       ))}
@@ -572,8 +584,8 @@ export default function ChatView({ chatId }: ChatViewProps) {
                       onClick={() => openInCanvas(msg.id, msg.content)}
                       className="mt-2 flex items-center gap-1.5 rounded-md border border-border/30 bg-secondary/30 px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
                     >
-                      <PanelRightOpen className="h-3 w-3" />
-                      Open in Canvas
+                       <PanelRightOpen className="h-3 w-3" />
+                       Abrir no Canvas
                     </button>
                   )}
                 </div>
@@ -590,9 +602,9 @@ export default function ChatView({ chatId }: ChatViewProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-              placeholder="Type your question..."
+              placeholder="Digite sua pergunta..."
               rows={1}
-              className="flex-1 resize-none rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none"
+              className="flex-1 resize-none rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
             />
             {sending ? (
               <Button onClick={handleStop} variant="destructive" size="icon" className="h-10 w-10">
