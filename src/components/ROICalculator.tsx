@@ -1,7 +1,30 @@
-import { motion, useInView } from "framer-motion";
-import { useRef, useState, useMemo } from "react";
+import { motion, useInView, useSpring, useTransform, MotionValue } from "framer-motion";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { Calculator, Clock, TrendingUp, DollarSign } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+
+function AnimatedNumber({
+  value,
+  format,
+}: {
+  value: number;
+  format: (v: number) => string;
+}) {
+  const spring = useSpring(0, { stiffness: 80, damping: 20 });
+  const display = useTransform(spring, (v) => format(Math.round(v)));
+  const [text, setText] = useState(format(0));
+
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+
+  useEffect(() => {
+    const unsubscribe = display.on("change", (v) => setText(v));
+    return unsubscribe;
+  }, [display]);
+
+  return <>{text}</>;
+}
 
 const ROICalculator = () => {
   const ref = useRef(null);
