@@ -302,9 +302,9 @@ export default function LibraryDetail() {
   );
 
   const statusBadge = (status: string) => {
-    if (status === "ready") return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Ready</Badge>;
-    if (status === "processing") return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30"><Loader2 className="h-3 w-3 animate-spin mr-1" />Processing</Badge>;
-    return <Badge className="bg-destructive/20 text-destructive border-destructive/30">Error</Badge>;
+    if (status === "ready") return <Badge style={{ backgroundColor: "hsl(var(--success) / 0.2)", color: "hsl(var(--success))", borderColor: "hsl(var(--success) / 0.3)" }}>Pronto</Badge>;
+    if (status === "processing") return <Badge style={{ backgroundColor: "hsl(var(--warning) / 0.2)", color: "hsl(var(--warning))", borderColor: "hsl(var(--warning) / 0.3)" }}><Loader2 className="h-3 w-3 animate-spin mr-1" />Processando</Badge>;
+    return <Badge className="bg-destructive/20 text-destructive border-destructive/30">Erro</Badge>;
   };
 
   return (
@@ -351,7 +351,7 @@ export default function LibraryDetail() {
           {documents.length === 0 ? (
             <div className="flex flex-col items-center py-16 text-muted-foreground">
               <FileText className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm">No documents yet.</p>
+              <p className="text-sm">Nenhum documento ainda.</p>
             </div>
           ) : (
             <div className="overflow-auto rounded-lg border border-border/30">

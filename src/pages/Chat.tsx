@@ -14,7 +14,8 @@ import {
 import { isRunningInTauri } from "@/lib/config";
 import type { Chat, Agent, ChatMessage, SourceItem } from "@/types";
 import type { CanvasDocument } from "@/components/chat/CanvasPanel";
-import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen, Square } from "lucide-react";
+import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen, Square, Search, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -399,49 +400,113 @@ export default function ChatView({ chatId }: ChatViewProps) {
 
   const hasCanvasContent = (content: string) => parseCanvasContent("test", content) !== null;
 
+  // ── Chat suggestions ──
+  const suggestions = [
+    "Resuma os últimos relatórios adicionados",
+    "Quais documentos tenho disponíveis?",
+    "Compare os dados do último trimestre",
+    "Faça uma análise dos principais indicadores",
+  ];
+
+  const handleSuggestion = (text: string) => {
+    setInput(text);
+  };
+
+  // ── History grouping ──
+  const [historySearch, setHistorySearch] = useState("");
+
+  const filteredChats = chats.filter((c) =>
+    historySearch.length === 0 || c.title.toLowerCase().includes(historySearch.toLowerCase())
+  );
+
+  const groupChats = (list: Chat[]) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today.getTime() - 86400000);
+    const weekAgo = new Date(today.getTime() - 7 * 86400000);
+
+    const groups: { label: string; chats: Chat[] }[] = [
+      { label: "Hoje", chats: [] },
+      { label: "Ontem", chats: [] },
+      { label: "Esta semana", chats: [] },
+      { label: "Anteriores", chats: [] },
+    ];
+
+    list.forEach((c) => {
+      const d = new Date(c.created_at);
+      if (d >= today) groups[0].chats.push(c);
+      else if (d >= yesterday) groups[1].chats.push(c);
+      else if (d >= weekAgo) groups[2].chats.push(c);
+      else groups[3].chats.push(c);
+    });
+
+    return groups.filter((g) => g.chats.length > 0);
+  };
+
+  const chatGroups = groupChats(filteredChats);
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
       {/* Chat list sidebar */}
       <div className="hidden w-72 flex-shrink-0 flex-col border-r border-border/30 bg-card/20 md:flex">
         <div className="flex items-center justify-between border-b border-border/30 px-4 py-3">
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">History</span>
+          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Histórico</span>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/app")}>
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </div>
+        {/* Search */}
+        <div className="px-3 pt-3 pb-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground/50" />
+            <Input
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+              placeholder="Buscar conversas..."
+              className="h-8 pl-8 text-xs bg-secondary/20 border-border/30"
+            />
+          </div>
+        </div>
         <div className="flex-1 overflow-auto p-2">
           {loadingChats ? (
             <div className="space-y-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-          ) : chats.length === 0 ? (
-            <p className="px-3 py-6 text-center text-xs text-muted-foreground">No conversations yet.</p>
+          ) : filteredChats.length === 0 ? (
+            <p className="px-3 py-6 text-center text-xs text-muted-foreground">
+              {historySearch ? "Nenhum resultado encontrado." : "Nenhuma conversa ainda."}
+            </p>
           ) : (
-            chats.map((chat) => (
-              <div
-                key={chat.id}
-                className={`group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-secondary/40 ${chatId === chat.id ? "bg-secondary/50" : ""}`}
-                onClick={() => navigate(`/app/chat/${chat.id}`)}
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <MessageSquare className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
-                  <span className="truncate">{chat.title}</span>
-                </div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button onClick={(e) => e.stopPropagation()} className="hidden text-muted-foreground hover:text-destructive group-hover:block">
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete chat?</AlertDialogTitle>
-                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => deleteChat(chat.id)}>Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+            chatGroups.map((group) => (
+              <div key={group.label} className="mb-3">
+                <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">{group.label}</p>
+                {group.chats.map((chat) => (
+                  <div
+                    key={chat.id}
+                    className={`group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-secondary/40 ${chatId === chat.id ? "bg-secondary/50" : ""}`}
+                    onClick={() => navigate(`/app/chat/${chat.id}`)}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <MessageSquare className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                      <span className="truncate">{chat.title}</span>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button onClick={(e) => e.stopPropagation()} className="hidden text-muted-foreground hover:text-destructive group-hover:block">
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir conversa?</AlertDialogTitle>
+                          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteChat(chat.id)}>Excluir</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                ))}
               </div>
             ))
           )}
@@ -454,10 +519,10 @@ export default function ChatView({ chatId }: ChatViewProps) {
         <div className="border-b border-border/30 px-4 py-2">
           <Select value={selectedAgent} onValueChange={setSelectedAgent}>
             <SelectTrigger className="w-56 bg-secondary/20 border-border/30 h-8 text-xs">
-              <SelectValue placeholder="Select an agent (optional)" />
+              <SelectValue placeholder="Selecione um agente (opcional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__none__">All libraries (no agent)</SelectItem>
+              <SelectItem value="__none__">Todas as bibliotecas (sem agente)</SelectItem>
               {agents.map((a) => (
                 <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
               ))}
@@ -470,9 +535,21 @@ export default function ChatView({ chatId }: ChatViewProps) {
           {loadingMessages ? (
             <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-3/4" />)}</div>
           ) : messages.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
-              <Bot className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm">Ask anything...</p>
+            <div className="flex h-full flex-col items-center justify-center text-muted-foreground max-w-md mx-auto">
+              <Sparkles className="mb-4 h-12 w-12 opacity-20" />
+              <h2 className="text-lg font-semibold text-foreground mb-1">Olá! Como posso ajudar?</h2>
+              <p className="text-sm text-center mb-6">Faça uma pergunta sobre seus documentos ou escolha uma sugestão abaixo.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleSuggestion(s)}
+                    className="rounded-lg border border-border/30 bg-secondary/20 px-3 py-2.5 text-xs text-left text-muted-foreground hover:bg-secondary/40 hover:text-foreground transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             messages.map((msg) => (
@@ -496,7 +573,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
                   )}
                   {sources[msg.id] && (
                     <div className="mt-2 border-t border-border/20 pt-2">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Sources</p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Fontes</p>
                       {sources[msg.id].map((s, i) => (
                         <p key={i} className="text-xs text-muted-foreground">📄 {s.document_title}</p>
                       ))}
@@ -507,8 +584,8 @@ export default function ChatView({ chatId }: ChatViewProps) {
                       onClick={() => openInCanvas(msg.id, msg.content)}
                       className="mt-2 flex items-center gap-1.5 rounded-md border border-border/30 bg-secondary/30 px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
                     >
-                      <PanelRightOpen className="h-3 w-3" />
-                      Open in Canvas
+                       <PanelRightOpen className="h-3 w-3" />
+                       Abrir no Canvas
                     </button>
                   )}
                 </div>
@@ -525,9 +602,9 @@ export default function ChatView({ chatId }: ChatViewProps) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-              placeholder="Type your question..."
+              placeholder="Digite sua pergunta..."
               rows={1}
-              className="flex-1 resize-none rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:border-foreground/30 focus:outline-none"
+              className="flex-1 resize-none rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
             />
             {sending ? (
               <Button onClick={handleStop} variant="destructive" size="icon" className="h-10 w-10">

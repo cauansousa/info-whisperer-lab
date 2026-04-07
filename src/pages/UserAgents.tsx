@@ -153,14 +153,14 @@ export default function UserAgents() {
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold">My Agents</h1>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> New agent</Button>
+        <h1 className="font-display text-2xl font-bold">Meus Agentes</h1>
+        <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Novo agente</Button>
       </div>
 
       {agents.length === 0 ? (
         <div className="flex flex-col items-center py-20 text-muted-foreground">
           <Bot className="mb-3 h-10 w-10 opacity-30" />
-          <p className="text-sm">No agents yet. Create one to get started.</p>
+          <p className="text-sm">Nenhum agente ainda. Crie um para começar.</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -211,8 +211,8 @@ export default function UserAgents() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-auto">
           <DialogHeader>
-            <DialogTitle>{editId ? "Edit Agent" : "New Agent"}</DialogTitle>
-            <DialogDescription>Configure your AI agent with your available libraries.</DialogDescription>
+            <DialogTitle>{editId ? "Editar Agente" : "Novo Agente"}</DialogTitle>
+            <DialogDescription>Configure seu agente de IA com suas bibliotecas disponíveis.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSave}>
             <Tabs defaultValue="basic">
@@ -223,19 +223,28 @@ export default function UserAgents() {
                 <TabsTrigger value="advanced">Advanced</TabsTrigger>
               </TabsList>
               <TabsContent value="basic" className="space-y-3">
-                <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Agent name" required />
-                <Input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description (optional)" />
-                <textarea value={form.system_prompt} onChange={(e) => setForm((p) => ({ ...p, system_prompt: e.target.value }))} placeholder="Your additional instructions (will be combined with library prompts)" className="w-full rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm min-h-[80px] focus:outline-none focus:border-foreground/30 placeholder:text-muted-foreground/50" />
-                <p className="text-[11px] text-muted-foreground/60">This prompt will be concatenated with the prompts defined in the selected libraries.</p>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Nome do agente</label>
+                  <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Ex: Assistente Financeiro" required />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Descrição <span className="text-muted-foreground font-normal">(opcional)</span></label>
+                  <Input value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Para que serve este agente?" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Instruções adicionais <span className="text-muted-foreground font-normal">(opcional)</span></label>
+                  <textarea value={form.system_prompt} onChange={(e) => setForm((p) => ({ ...p, system_prompt: e.target.value }))} placeholder="Instruções extras (serão combinadas com os prompts das bibliotecas)" className="w-full rounded-lg border border-border/40 bg-secondary/20 px-4 py-2.5 text-sm min-h-[80px] focus:outline-none focus:border-foreground/30 placeholder:text-muted-foreground/50" />
+                </div>
+                <p className="text-[11px] text-muted-foreground/60">Este prompt será concatenado com os prompts definidos nas bibliotecas selecionadas.</p>
               </TabsContent>
               <TabsContent value="model" className="space-y-3">
                 <Select value={form.model_provider_id} onValueChange={(v) => setForm((p) => ({ ...p, model_provider_id: v }))}>
-                  <SelectTrigger className="bg-secondary/20 border-border/40"><SelectValue placeholder="Select LLM provider" /></SelectTrigger>
+                  <SelectTrigger className="bg-secondary/20 border-border/40"><SelectValue placeholder="Selecione o provedor LLM" /></SelectTrigger>
                   <SelectContent>{providers.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} — {p.model}</SelectItem>)}</SelectContent>
                 </Select>
               </TabsContent>
               <TabsContent value="libraries" className="space-y-2">
-                {allowedLibraries.length === 0 && <p className="text-xs text-muted-foreground">You don't have access to any libraries yet.</p>}
+                {allowedLibraries.length === 0 && <p className="text-xs text-muted-foreground">Você ainda não tem acesso a nenhuma biblioteca.</p>}
                 {allowedLibraries.map((lib) => (
                   <div key={lib.id} className="rounded-lg border border-border/20 px-3 py-2 hover:bg-secondary/20 transition-colors">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -262,7 +271,7 @@ export default function UserAgents() {
               </TabsContent>
             </Tabs>
             <Button type="submit" disabled={saving} className="mt-4 w-full">
-              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving...</> : editId ? "Update agent" : "Create agent"}
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</> : editId ? "Atualizar agente" : "Criar agente"}
             </Button>
           </form>
         </DialogContent>
