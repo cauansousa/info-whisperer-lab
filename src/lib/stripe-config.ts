@@ -1,0 +1,67 @@
+export const STRIPE_TIERS = {
+  growth: {
+    product_id: "prod_UIH5DvfQqPkCqj",
+    price_id: "price_1TJgWwBWoQdiVFZvvSu4wkDB",
+    name: "Growth",
+    price: "R$4.500",
+    priceValue: 4500,
+    period: "/mês",
+    description: "Para empresas de 200–500 funcionários",
+    setup: "Grátis",
+    features: [
+      "Até 3 integrações",
+      "Agentes ilimitados",
+      "LLM BYOK",
+      "Setup grátis",
+      "Onboarding self-service",
+    ],
+    limits: {
+      integrations: 3,
+    },
+  },
+  business: {
+    product_id: "prod_UIH5DZxZheZ24U",
+    price_id: "price_1TJgXGBWoQdiVFZvSXIVwaw1",
+    name: "Business",
+    price: "R$11.000",
+    priceValue: 11000,
+    period: "/mês",
+    description: "Para empresas de 500–1.500 funcionários",
+    setup: "Variável",
+    features: [
+      "Integrações ilimitadas",
+      "Agentes ilimitados",
+      "LLM BYOK",
+      "SSO/SAML",
+      "CSM assistido",
+      "Setup variável",
+    ],
+    limits: {
+      integrations: Infinity,
+    },
+    recommended: true,
+  },
+  enterprise: {
+    product_id: null,
+    price_id: null,
+    name: "Enterprise",
+    price: "Sob medida",
+    priceValue: null,
+    period: "",
+    description: "Para empresas 1.500+ funcionários ou regulados",
+    setup: "Variável",
+    features: [
+      "Integrações ilimitadas",
+      "Agentes ilimitados",
+      "LLM BYOK",
+      "SSO/SAML",
+      "White-glove onboarding",
+      "ACV mín. R$250k",
+    ],
+    limits: {
+      integrations: Infinity,
+    },
+  },
+} as const;
+
+export type PlanTier = keyof typeof STRIPE_TIERS;
