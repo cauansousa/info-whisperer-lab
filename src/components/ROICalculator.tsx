@@ -1,7 +1,30 @@
-import { motion, useInView } from "framer-motion";
-import { useRef, useState, useMemo } from "react";
+import { motion, useInView, useSpring, useTransform, MotionValue } from "framer-motion";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { Calculator, Clock, TrendingUp, DollarSign } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+
+function AnimatedNumber({
+  value,
+  format,
+}: {
+  value: number;
+  format: (v: number) => string;
+}) {
+  const spring = useSpring(0, { stiffness: 80, damping: 20 });
+  const display = useTransform(spring, (v) => format(Math.round(v)));
+  const [text, setText] = useState(format(0));
+
+  useEffect(() => {
+    spring.set(value);
+  }, [value, spring]);
+
+  useEffect(() => {
+    const unsubscribe = display.on("change", (v) => setText(v));
+    return unsubscribe;
+  }, [display]);
+
+  return <>{text}</>;
+}
 
 const ROICalculator = () => {
   const ref = useRef(null);
@@ -129,10 +152,10 @@ const ROICalculator = () => {
                   <span className="text-xs font-medium uppercase tracking-wider">Economia anual estimada</span>
                 </div>
                 <p className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-                  {formatCurrency(results.annualSavings)}
+                  <AnimatedNumber value={results.annualSavings} format={formatCurrency} />
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {formatCurrency(results.monthlySavings)}/mês
+                  <AnimatedNumber value={results.monthlySavings} format={formatCurrency} />/mês
                 </p>
               </motion.div>
 
@@ -147,10 +170,10 @@ const ROICalculator = () => {
                   <span className="text-xs font-medium uppercase tracking-wider">Horas recuperadas</span>
                 </div>
                 <p className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-                  {results.monthlyHoursSaved.toLocaleString("pt-BR")}h
+                  <AnimatedNumber value={results.monthlyHoursSaved} format={(v) => `${v.toLocaleString("pt-BR")}h`} />
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  por mês · {results.weeklyHoursSaved.toLocaleString("pt-BR")}h/semana
+                  por mês · <AnimatedNumber value={results.weeklyHoursSaved} format={(v) => `${v.toLocaleString("pt-BR")}h`} />/semana
                 </p>
               </motion.div>
 
@@ -165,7 +188,7 @@ const ROICalculator = () => {
                   <span className="text-xs font-medium uppercase tracking-wider">Ganho de produtividade</span>
                 </div>
                 <p className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-                  +{results.productivityGain}%
+                  +<AnimatedNumber value={parseFloat(results.productivityGain)} format={(v) => `${v.toFixed(1)}%`} />
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   do tempo de trabalho semanal recuperado
