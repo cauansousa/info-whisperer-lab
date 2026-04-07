@@ -284,11 +284,16 @@ export default function Settings() {
                 variant="outline"
                 size="sm"
                 onClick={checkForUpdate}
-                disabled={updateState === "checking"}
                 className="gap-2"
               >
-                <RefreshCw className={`h-4 w-4 ${updateState === "checking" ? "animate-spin" : ""}`} />
-                {updateState === "checking" ? "Checking…" : "Check for updates"}
+                <RefreshCw className="h-4 w-4" />
+                Check for updates
+              </Button>
+            )}
+            {updateState === "checking" && (
+              <Button variant="outline" size="sm" disabled className="gap-2">
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                Checking…
               </Button>
             )}
           </CardContent>
