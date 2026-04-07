@@ -351,7 +351,7 @@ export default function LibraryDetail() {
           {documents.length === 0 ? (
             <div className="flex flex-col items-center py-16 text-muted-foreground">
               <FileText className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm">No documents yet.</p>
+              <p className="text-sm">Nenhum documento ainda.</p>
             </div>
           ) : (
             <div className="overflow-auto rounded-lg border border-border/30">
