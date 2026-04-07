@@ -7,32 +7,32 @@ const features = [
   {
     icon: Brain,
     title: "Agentes Conversacionais",
-    description: "Crie agentes treinados com os dados da sua empresa. Sua equipe obtém respostas precisas e auditáveis em segundos — eliminando horas de busca manual.",
+    description: "Crie agentes inteligentes treinados com os dados da sua empresa. Respostas precisas, contextuais e instantâneas.",
   },
   {
     icon: FolderLock,
     title: "Bibliotecas de Conhecimento",
-    description: "Centralize documentos, manuais e políticas em bibliotecas inteligentes. Acabe com o conhecimento fragmentado entre equipes e sistemas.",
+    description: "Organize seus dados em bibliotecas — como pastas inteligentes que alimentam seus agentes com informação relevante.",
   },
   {
     icon: Users,
     title: "Compartilhamento Granular",
-    description: "Compartilhe com setores inteiros ou pessoas específicas. Ideal para empresas com alta rotatividade onde o conhecimento crítico se perde.",
+    description: "Compartilhe bibliotecas com setores inteiros ou pessoas específicas. O controle está nas mãos dos gestores.",
   },
   {
     icon: Shield,
-    title: "Governança e Compliance",
-    description: "Controle total sobre quem acessa o quê. Adequado à LGPD, com opção de processamento 100% local — seus dados nunca saem da empresa.",
+    title: "Governança e Controle",
+    description: "Apenas superiores autorizados podem criar e compartilhar bibliotecas. Hierarquia respeitada, dados protegidos.",
   },
   {
     icon: MessageSquare,
-    title: "Respostas em Menos de 7 Dias",
-    description: "Do upload do primeiro documento à primeira resposta útil em menos de uma semana. Sem implementação complexa, sem trocar de stack.",
+    title: "Conversas Naturais",
+    description: "Funcionários interagem naturalmente com os agentes, como se estivessem conversando com um colega especialista.",
   },
   {
     icon: Sparkles,
-    title: "ROI Mensurável",
-    description: "Reduza o tempo gasto buscando informação interna. Empresas mid-market economizam centenas de horas por mês com conhecimento centralizado.",
+    title: "Aprendizado Contínuo",
+    description: "À medida que novas informações são adicionadas às bibliotecas, os agentes se atualizam automaticamente.",
   },
 ];
 
@@ -89,11 +89,11 @@ const FeaturesSection = () => {
             Funcionalidades
           </span>
           <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
-            Transforme conhecimento fragmentado em{" "}
-            <span className="text-gradient">respostas precisas</span>
+            Tudo que você precisa para{" "}
+            <span className="text-gradient">gerir conhecimento</span>
           </h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
-            Empresas de 200 a 2.000 funcionários perdem centenas de horas por mês buscando informação em silos. O Knowledge AI resolve isso.
+            Uma plataforma completa para organizar, compartilhar e acessar o conhecimento da sua empresa de forma inteligente.
           </p>
         </motion.div>
 

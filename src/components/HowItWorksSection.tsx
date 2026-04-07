@@ -49,7 +49,7 @@ const HowItWorksSection = () => {
           <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
             Simples.{" "}
             <span className="text-gradient">Poderoso.</span>{" "}
-            Sem mudar seu stack.
+            Seguro.
           </h2>
         </motion.div>
 

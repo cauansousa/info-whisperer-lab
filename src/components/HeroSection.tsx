@@ -84,9 +84,9 @@ const HeroSection = () => {
             transition={{ duration: 1, delay: 1.4 }}
             className="mx-auto mt-10 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg"
           >
-            Reduza o tempo que sua equipe gasta buscando informação interna.
+            Transforme dados internos em agentes inteligentes.
             <br />
-            <span className="text-foreground/60">Respostas precisas e auditáveis — sem mudar o stack existente.</span>
+            <span className="text-foreground/60">Controle total. Acesso granular. Zero fricção.</span>
           </motion.p>
 
           <motion.div
