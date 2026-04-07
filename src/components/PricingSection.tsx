@@ -1,4 +1,4 @@
-import { Check, X, Minus } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { STRIPE_TIERS } from "@/lib/stripe-config";
@@ -54,15 +54,22 @@ const plans = [
 ];
 
 function CellContent({ value }: { value: CellValue }) {
-  if (value === true) return <Check className="h-5 w-5 text-[hsl(var(--success))] mx-auto" />;
-  if (value === false) return <X className="h-5 w-5 text-muted-foreground/40 mx-auto" />;
-  return <span className="text-sm text-foreground">{value}</span>;
+  if (value === true)
+    return (
+      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[hsl(var(--success)/0.15)]">
+        <Check className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
+      </span>
+    );
+  if (value === false)
+    return <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />;
+  return <span className="text-sm font-medium text-foreground">{value}</span>;
 }
 
 export default function PricingSection() {
   return (
     <section id="pricing" className="py-24 px-4">
       <div className="max-w-5xl mx-auto">
+        {/* Header */}
         <div className="text-center mb-16">
           <Badge variant="outline" className="mb-4 border-primary/30 text-muted-foreground">
             Planos
@@ -75,127 +82,141 @@ export default function PricingSection() {
           </p>
         </div>
 
-        {/* Header row with plan cards */}
+        {/* Plan header cards */}
+        <div className="grid grid-cols-[1fr] md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-0">
+          {/* Empty top-left */}
+          <div className="hidden md:block" />
+
+          {plans.map((plan) => {
+            const isRec = "recommended" in plan && plan.recommended;
+            return (
+              <div
+                key={plan.key}
+                className={`relative p-6 text-center rounded-t-2xl transition-all ${
+                  isRec
+                    ? "bg-foreground/[0.06] border border-b-0 border-foreground/20 -mt-2 pt-8 z-10"
+                    : "bg-foreground/[0.03] border border-b-0 border-border/30"
+                }`}
+              >
+                {isRec && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-foreground text-background text-xs font-semibold px-3 py-0.5">
+                      Recomendado
+                    </Badge>
+                  </div>
+                )}
+                <h3 className="font-display font-bold text-lg text-foreground">{plan.name}</h3>
+                <p className="text-xs text-muted-foreground mt-1 leading-snug">{plan.description}</p>
+                <div className="mt-4 mb-4">
+                  <span className="text-3xl font-bold tracking-tight text-foreground">{plan.price}</span>
+                  {plan.period && (
+                    <span className="text-muted-foreground text-sm ml-0.5">{plan.period}</span>
+                  )}
+                </div>
+                {plan.key === "enterprise" ? (
+                  <Button
+                    variant="outline"
+                    className="w-full border-foreground/20 text-foreground hover:bg-foreground/10"
+                    onClick={() => {
+                      document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    Falar com vendas
+                  </Button>
+                ) : (
+                  <Button
+                    className={`w-full ${
+                      isRec
+                        ? "bg-foreground text-background hover:bg-foreground/90"
+                        : "bg-foreground/10 text-foreground hover:bg-foreground/20 border border-foreground/20"
+                    }`}
+                    asChild
+                  >
+                    <a href="/signup">Começar trial grátis</a>
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Comparison table */}
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="w-[35%] p-0" />
-                {plans.map((plan) => {
-                  const isRec = "recommended" in plan && plan.recommended;
-                  return (
-                    <th
-                      key={plan.key}
-                      className={`w-[21.6%] p-4 text-center align-bottom rounded-t-xl ${
-                        isRec
-                          ? "bg-primary/5 border border-b-0 border-primary/30"
-                          : "bg-card/60 border border-b-0 border-border/40"
-                      }`}
-                    >
-                      {isRec && (
-                        <Badge className="bg-primary text-primary-foreground mb-2 text-xs">
-                          Recomendado
-                        </Badge>
-                      )}
-                      <div className="font-display font-bold text-lg text-foreground">{plan.name}</div>
-                      <p className="text-xs text-muted-foreground mt-1 font-normal">{plan.description}</p>
-                      <div className="mt-3">
-                        <span className="text-2xl font-bold text-foreground">{plan.price}</span>
-                        {plan.period && (
-                          <span className="text-muted-foreground text-sm font-normal">{plan.period}</span>
-                        )}
-                      </div>
-                      <div className="mt-4">
-                        {plan.key === "enterprise" ? (
-                          <Button
-                            variant="hero-outline"
-                            size="sm"
-                            className="w-full"
-                            onClick={() => {
-                              document.getElementById("cta")?.scrollIntoView({ behavior: "smooth" });
-                            }}
-                          >
-                            Falar com vendas
-                          </Button>
-                        ) : (
-                          <Button
-                            variant={isRec ? "hero" : "hero-outline"}
-                            size="sm"
-                            className="w-full"
-                            asChild
-                          >
-                            <a href="/signup">Começar trial grátis</a>
-                          </Button>
-                        )}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-
-            <tbody>
-              {categories.map((cat, ci) => (
-                <>
-                  {/* Category header */}
-                  <tr key={`cat-${ci}`}>
-                    <td
-                      colSpan={4}
-                      className="pt-6 pb-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border/30"
-                    >
+          <div className="min-w-[700px]">
+            {categories.map((cat, ci) => (
+              <div key={ci}>
+                {/* Category header */}
+                <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-foreground/10">
+                  <div className="py-4 px-4">
+                    <span className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">
                       {cat.title}
-                    </td>
-                  </tr>
+                    </span>
+                  </div>
+                  {plans.map((plan) => {
+                    const isRec = "recommended" in plan && plan.recommended;
+                    return (
+                      <div
+                        key={plan.key}
+                        className={`py-4 ${
+                          isRec
+                            ? "bg-foreground/[0.06] border-x border-foreground/20"
+                            : ci === 0
+                            ? "bg-foreground/[0.03] border-x border-border/30"
+                            : "border-x border-border/30"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
 
-                  {/* Feature rows */}
-                  {cat.rows.map((row, ri) => (
-                    <tr
-                      key={`row-${ci}-${ri}`}
-                      className="border-b border-border/20 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="py-3 px-2 text-sm text-foreground">{row.label}</td>
-                      {(["growth", "business", "enterprise"] as const).map((planKey) => {
-                        const plan = plans.find((p) => p.key === planKey)!;
-                        const isRec = "recommended" in plan && plan.recommended;
-                        return (
-                          <td
-                            key={planKey}
-                            className={`py-3 px-4 text-center ${
-                              isRec
-                                ? "bg-primary/5 border-x border-primary/30"
-                                : "bg-card/60 border-x border-border/40"
-                            }`}
-                          >
-                            <CellContent value={row[planKey]} />
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </>
-              ))}
-            </tbody>
+                {/* Feature rows */}
+                {cat.rows.map((row, ri) => (
+                  <div
+                    key={ri}
+                    className="grid grid-cols-[1.4fr_1fr_1fr_1fr] border-b border-border/10 hover:bg-foreground/[0.02] transition-colors"
+                  >
+                    <div className="py-3.5 px-4 text-sm text-muted-foreground flex items-center">
+                      {row.label}
+                    </div>
+                    {(["growth", "business", "enterprise"] as const).map((planKey) => {
+                      const plan = plans.find((p) => p.key === planKey)!;
+                      const isRec = "recommended" in plan && plan.recommended;
+                      return (
+                        <div
+                          key={planKey}
+                          className={`py-3.5 px-4 flex items-center justify-center ${
+                            isRec
+                              ? "bg-foreground/[0.06] border-x border-foreground/20"
+                              : "border-x border-border/30"
+                          }`}
+                        >
+                          <CellContent value={row[planKey]} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            ))}
 
-            {/* Bottom border rounding */}
-            <tfoot>
-              <tr>
-                <td className="p-0" />
-                {plans.map((plan) => {
-                  const isRec = "recommended" in plan && plan.recommended;
-                  return (
-                    <td
-                      key={plan.key}
-                      className={`h-4 rounded-b-xl ${
-                        isRec
-                          ? "bg-primary/5 border border-t-0 border-primary/30"
-                          : "bg-card/60 border border-t-0 border-border/40"
-                      }`}
-                    />
-                  );
-                })}
-              </tr>
-            </tfoot>
-          </table>
+            {/* Bottom rounded bar */}
+            <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr]">
+              <div />
+              {plans.map((plan) => {
+                const isRec = "recommended" in plan && plan.recommended;
+                return (
+                  <div
+                    key={plan.key}
+                    className={`h-6 rounded-b-2xl ${
+                      isRec
+                        ? "bg-foreground/[0.06] border border-t-0 border-foreground/20"
+                        : "bg-foreground/[0.03] border border-t-0 border-border/30"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </section>
