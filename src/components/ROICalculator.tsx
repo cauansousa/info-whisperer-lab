@@ -11,7 +11,7 @@ function AnimatedNumber({
   format: (v: number) => string;
 }) {
   const spring = useSpring(0, { stiffness: 80, damping: 20 });
-  const display = useTransform(spring, (v) => format(Math.round(v)));
+  const display = useTransform(spring, (v) => format(v));
   const [text, setText] = useState(format(0));
 
   useEffect(() => {
