@@ -262,14 +262,14 @@ export default function Settings() {
             </div>
 
             {updateState === "up-to-date" && (
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              <Badge className="bg-[hsl(var(--success))]/20 text-[hsl(var(--success-foreground))] border-[hsl(var(--success))]/30">
                 You're up to date
               </Badge>
             )}
 
             {updateState === "available" && latestVersion && (
               <div className="flex items-center gap-3">
-                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                <Badge className="bg-[hsl(var(--warning))]/20 text-[hsl(var(--warning-foreground))] border-[hsl(var(--warning))]/30">
                   v{latestVersion} available
                 </Badge>
                 <Button size="sm" onClick={openDownload} className="gap-2">

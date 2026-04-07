@@ -34,6 +34,11 @@
     --input: 0 0% 15%;
     --ring: 0 0% 100%;
 
+    --success: 142 76% 36%;
+    --success-foreground: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 92% 60%;
+
     --radius: 0.75rem;
 
     --glow: 0 0% 100%;
