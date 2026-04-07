@@ -185,13 +185,13 @@ const ROICalculator = () => {
               >
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="text-xs font-medium uppercase tracking-wider">Ganho de produtividade</span>
+                  <span className="text-xs font-medium uppercase tracking-wider">Equivalente em funcionários</span>
                 </div>
                 <p className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-                  +<AnimatedNumber value={parseFloat(results.productivityGain)} format={(v) => `${v.toFixed(1)}%`} />
+                  +<AnimatedNumber value={results.equivalentEmployees} format={(v) => `${v.toFixed(1)}`} />
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  do tempo de trabalho semanal recuperado
+                  profissionais em tempo integral recuperados
                 </p>
               </motion.div>
             </div>
