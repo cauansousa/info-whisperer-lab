@@ -4,6 +4,7 @@ import FeaturesSection from "@/components/FeaturesSection";
 import IntegrationsSection from "@/components/IntegrationsSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import ROICalculator from "@/components/ROICalculator";
+import PricingSection from "@/components/PricingSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 
@@ -16,6 +17,7 @@ const Index = () => {
       <IntegrationsSection />
       <HowItWorksSection />
       <ROICalculator />
+      <PricingSection />
       <CTASection />
       <Footer />
     </div>

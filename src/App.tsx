@@ -59,6 +59,8 @@ const App = () => (
               <Route path="settings" element={<Settings />} />
             </Route>
 
+            <Route path="/signup" element={<Signup />} />
+
             <Route path="/admin" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route path="libraries" element={<Libraries />} />
               <Route path="libraries/:libraryId" element={<LibraryDetail />} />
@@ -67,7 +69,6 @@ const App = () => (
               <Route path="groups/:groupId" element={<GroupDetail />} />
               <Route path="organization" element={<Organization />} />
               <Route path="ai-config" element={<AIConfig />} />
-              <Route path="signup" element={<SuperAdminRoute><Signup /></SuperAdminRoute>} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
