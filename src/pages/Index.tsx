@@ -15,6 +15,7 @@ const Index = () => {
       <FeaturesSection />
       <IntegrationsSection />
       <HowItWorksSection />
+      <ROICalculator />
       <CTASection />
       <Footer />
     </div>
