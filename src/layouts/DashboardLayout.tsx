@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Outlet } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TrialBanner from "@/components/TrialBanner";
 
 export default function DashboardLayout() {
   const { me, logout } = useAuth();
@@ -13,6 +14,7 @@ export default function DashboardLayout() {
       <div className="min-h-screen flex w-full bg-background">
         <DashboardSidebar />
         <div className="flex-1 flex flex-col min-w-0">
+          <TrialBanner />
           <header className="flex h-14 items-center justify-between border-b border-border/40 bg-card/30 px-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="text-muted-foreground hover:text-foreground" />

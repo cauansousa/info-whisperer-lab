@@ -70,8 +70,14 @@ export default function Signup() {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating…" : "Create account"}
+              {loading ? "Criando…" : "Criar conta"}
             </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Já tem uma conta?{" "}
+              <a href="/login" className="text-primary underline underline-offset-4 hover:text-primary/80">
+                Entrar
+              </a>
+            </p>
           </form>
         </CardContent>
       </Card>
