@@ -14,7 +14,8 @@ import {
 import { isRunningInTauri } from "@/lib/config";
 import type { Chat, Agent, ChatMessage, SourceItem } from "@/types";
 import type { CanvasDocument } from "@/components/chat/CanvasPanel";
-import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen, Square } from "lucide-react";
+import { Plus, Trash2, Send, Loader2, MessageSquare, Bot, PanelRightOpen, Square, Search, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
