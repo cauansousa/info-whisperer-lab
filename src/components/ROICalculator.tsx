@@ -39,14 +39,14 @@ const ROICalculator = () => {
     const monthlyHoursSaved = weeklyHoursSaved * 4.3;
     const monthlySavings = monthlyHoursSaved * avgSalaryHour;
     const annualSavings = monthlySavings * 12;
-    const productivityGain = (hoursSearching * 0.6 / 40) * 100; // % of work week recovered
+    const equivalentEmployees = monthlyHoursSaved / (40 * 4.3); // full-time equivalents
 
     return {
       weeklyHoursSaved: Math.round(weeklyHoursSaved),
       monthlyHoursSaved: Math.round(monthlyHoursSaved),
       monthlySavings,
       annualSavings,
-      productivityGain: productivityGain.toFixed(1),
+      equivalentEmployees: Math.round(equivalentEmployees * 10) / 10,
     };
   }, [employees, hoursSearching, avgSalaryHour]);
 
@@ -185,13 +185,13 @@ const ROICalculator = () => {
               >
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <TrendingUp className="h-4 w-4" />
-                  <span className="text-xs font-medium uppercase tracking-wider">Ganho de produtividade</span>
+                  <span className="text-xs font-medium uppercase tracking-wider">Equivalente em funcionários</span>
                 </div>
                 <p className="font-display text-3xl font-bold text-foreground sm:text-4xl">
-                  +<AnimatedNumber value={parseFloat(results.productivityGain)} format={(v) => `${v.toFixed(1)}%`} />
+                  +<AnimatedNumber value={results.equivalentEmployees} format={(v) => `${v.toFixed(1)}`} />
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  do tempo de trabalho semanal recuperado
+                  profissionais em tempo integral recuperados
                 </p>
               </motion.div>
             </div>
