@@ -78,10 +78,10 @@ const CTASection = () => {
         >
           <div className="mb-12 text-center">
             <h2 className="font-display text-3xl font-bold leading-tight sm:text-4xl md:text-5xl">
-              Solicitar acesso
+              Comece grátis com seu time
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Preencha os dados abaixo e entraremos em contato.
+              Workspace gratuito para até 3 usuários. Sem cartão de crédito, sem compromisso.
             </p>
           </div>
 
@@ -165,7 +165,7 @@ const CTASection = () => {
               </button>
 
               <p className="text-center text-xs text-muted-foreground/50">
-                Seus dados estão seguros. Não compartilhamos com terceiros.
+                Seus dados estão seguros. Adequado à LGPD. Não compartilhamos com terceiros.
               </p>
             </form>
           )}
