@@ -84,7 +84,7 @@ export default function UserLibraries() {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl font-bold">Libraries</h1>
+        <h1 className="font-display text-2xl font-bold">Bibliotecas</h1>
         {tab === "mine" && (
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
@@ -95,14 +95,14 @@ export default function UserLibraries() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Create Library</DialogTitle>
-                <DialogDescription>A personal library only you can access by default.</DialogDescription>
+                <DialogTitle>Criar Biblioteca</DialogTitle>
+                <DialogDescription>Uma biblioteca pessoal acessível apenas por você por padrão.</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreate} className="space-y-4 mt-2">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Name</label>
+                  <label className="text-sm font-medium">Nome</label>
                   <Input
-                    placeholder="My Research"
+                    placeholder="Minha Pesquisa"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -110,17 +110,17 @@ export default function UserLibraries() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Description <span className="text-muted-foreground font-normal">(optional)</span></label>
+                  <label className="text-sm font-medium">Descrição <span className="text-muted-foreground font-normal">(opcional)</span></label>
                   <Input
-                    placeholder="What is this library about?"
+                    placeholder="Sobre o que é esta biblioteca?"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
-                  <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                  <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancelar</Button>
                   <Button type="submit" disabled={creating || !name.trim()}>
-                    {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
+                    {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Criar"}
                   </Button>
                 </div>
               </form>
@@ -140,7 +140,7 @@ export default function UserLibraries() {
           }`}
         >
           <BookOpen className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
-          My Libraries
+          Minhas Bibliotecas
           {myLibraries.length > 0 && (
             <Badge variant="secondary" className="ml-2 text-[10px] py-0 px-1.5">{myLibraries.length}</Badge>
           )}
@@ -154,7 +154,7 @@ export default function UserLibraries() {
           }`}
         >
           <Share2 className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
-          Shared with me
+          Compartilhadas comigo
           {sharedLibraries.length > 0 && (
             <Badge variant="secondary" className="ml-2 text-[10px] py-0 px-1.5">{sharedLibraries.length}</Badge>
           )}
@@ -166,16 +166,16 @@ export default function UserLibraries() {
           {tab === "mine" ? (
             <>
               <BookOpen className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm mb-4">You haven't created any libraries yet.</p>
+              <p className="text-sm mb-4">Você ainda não criou nenhuma biblioteca.</p>
               <Button size="sm" variant="outline" onClick={() => setCreateOpen(true)}>
                 <Plus className="h-4 w-4 mr-1.5" />
-                Create your first library
+                Criar sua primeira biblioteca
               </Button>
             </>
           ) : (
             <>
               <Share2 className="mb-3 h-10 w-10 opacity-30" />
-              <p className="text-sm">No libraries have been shared with you yet.</p>
+              <p className="text-sm">Nenhuma biblioteca foi compartilhada com você ainda.</p>
             </>
           )}
         </div>
