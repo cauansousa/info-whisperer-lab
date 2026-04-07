@@ -39,14 +39,14 @@ const ROICalculator = () => {
     const monthlyHoursSaved = weeklyHoursSaved * 4.3;
     const monthlySavings = monthlyHoursSaved * avgSalaryHour;
     const annualSavings = monthlySavings * 12;
-    const productivityGain = (hoursSearching * 0.6 / 40) * 100; // % of work week recovered
+    const equivalentEmployees = monthlyHoursSaved / (40 * 4.3); // full-time equivalents
 
     return {
       weeklyHoursSaved: Math.round(weeklyHoursSaved),
       monthlyHoursSaved: Math.round(monthlyHoursSaved),
       monthlySavings,
       annualSavings,
-      productivityGain: productivityGain.toFixed(1),
+      equivalentEmployees: Math.round(equivalentEmployees * 10) / 10,
     };
   }, [employees, hoursSearching, avgSalaryHour]);
 
