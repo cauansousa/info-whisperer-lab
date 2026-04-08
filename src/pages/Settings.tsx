@@ -204,7 +204,7 @@ export default function Settings() {
   const currentTier = plan ? STRIPE_TIERS[plan as keyof typeof STRIPE_TIERS] : null;
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-display font-semibold">Settings</h1>
 
       <Tabs defaultValue={defaultTab}>
@@ -335,7 +335,7 @@ export default function Settings() {
                 </div>
               ) : subscribed && currentTier ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge className="bg-primary/10 text-primary border-primary/30 text-sm px-3 py-1">
                       {currentTier.name}
                     </Badge>
@@ -351,7 +351,7 @@ export default function Settings() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div>
                       <p className="text-xs text-muted-foreground">Valor</p>
                       <p className="text-sm font-medium">{currentTier.price}{currentTier.period}</p>
@@ -431,7 +431,7 @@ export default function Settings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {(["starter", "growth", "business"] as const).map((key) => {
                   const tier = STRIPE_TIERS[key];
                   const isCurrent = plan === key;
@@ -498,7 +498,7 @@ export default function Settings() {
               </div>
 
               {/* Enterprise CTA */}
-              <div className="mt-4 p-4 rounded-lg border border-border/40 bg-muted/30 flex items-center justify-between">
+              <div className="mt-4 p-4 rounded-lg border border-border/40 bg-muted/30 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
                 <div>
                   <p className="font-semibold text-sm">Enterprise</p>
                   <p className="text-xs text-muted-foreground">1.500+ funcionários ou regulados — sob medida</p>
