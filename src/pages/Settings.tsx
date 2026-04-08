@@ -439,12 +439,12 @@ export default function Settings() {
                   return (
                     <Card
                       key={key}
-                      className={`relative border transition-all ${
+                      className={`relative transition-all ${
                         isCurrent
-                          ? "border-primary/60 bg-primary/5"
+                          ? "border-primary/60 bg-primary/10 ring-1 ring-primary/20"
                           : isRecommended
-                          ? "border-primary/30"
-                          : "border-border/40"
+                          ? "border-primary/40 bg-card"
+                          : "border-border bg-card"
                       }`}
                     >
                       {isCurrent && (
@@ -454,10 +454,10 @@ export default function Settings() {
                       )}
                       {!isCurrent && isRecommended && (
                         <div className="absolute -top-2.5 left-3">
-                          <Badge variant="outline" className="text-xs border-primary/30">Recomendado</Badge>
+                          <Badge variant="outline" className="text-xs border-primary/50 bg-card">Recomendado</Badge>
                         </div>
                       )}
-                      <CardContent className="pt-5 space-y-3">
+                      <CardContent className="pt-6 space-y-4">
                         <p className="font-semibold">{tier.name}</p>
                         <p className="text-2xl font-bold">
                           {tier.price}
