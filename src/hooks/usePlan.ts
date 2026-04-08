@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { authSupabase } from "@/lib/auth-client";
 import type { PlanTier } from "@/lib/stripe-config";
 
