@@ -377,7 +377,7 @@ export default function Settings() {
                   <ul className="space-y-1.5 pt-2">
                     {currentTier.features.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Check className="h-3.5 w-3.5 text-[hsl(var(--success))] shrink-0" />
+                        <Check className="h-3.5 w-3.5 shrink-0" style={{ color: 'hsl(142, 76%, 46%)' }} />
                         {f}
                       </li>
                     ))}
@@ -467,7 +467,7 @@ export default function Settings() {
                         <ul className="space-y-1.5 text-xs">
                           {tier.features.map((f) => (
                             <li key={f} className="flex items-center gap-1.5 text-muted-foreground">
-                              <Check className="h-3 w-3 text-[hsl(var(--success))] shrink-0" />
+                              <Check className="h-3.5 w-3.5 shrink-0" style={{ color: 'hsl(142, 76%, 46%)' }} />
                               {f}
                             </li>
                           ))}
