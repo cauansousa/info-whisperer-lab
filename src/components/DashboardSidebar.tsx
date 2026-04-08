@@ -45,6 +45,7 @@ export function DashboardSidebar() {
 
   const isActive = (path: string) => {
     if (path === "/app") return location.pathname === "/app" || location.pathname.startsWith("/app/chat");
+    if (path.includes("?tab=billing")) return location.pathname === "/app/settings" && location.search.includes("tab=billing");
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
