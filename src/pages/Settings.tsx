@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowDownToLine, RefreshCw, CreditCard, Sparkles, ExternalLink } from "lucide-react";
+import { ArrowDownToLine, RefreshCw, CreditCard, Sparkles, ExternalLink, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getApiBase, setApiBase, resetApiBase, getDefaultApiBase, isRunningInTauri } from "@/lib/config";
