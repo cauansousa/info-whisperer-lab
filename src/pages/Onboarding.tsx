@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Invitation } from "@/types";
 import { Brain, Loader2, Users, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export default function Onboarding() {
+  const navigate = useNavigate();
+  const { refresh } = useAuth();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loadingInvites, setLoadingInvites] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -18,7 +22,7 @@ export default function Onboarding() {
   useEffect(() => {
     api.getMyInvitations()
       .then(setInvitations)
-      .catch(() => {})
+      .catch(() => toast.error("Failed to load invitations"))
       .finally(() => setLoadingInvites(false));
   }, []);
 
@@ -26,7 +30,8 @@ export default function Onboarding() {
     setAcceptingId(id);
     try {
       await api.acceptInvitation(token);
-      window.location.href = "/app";
+      await refresh();
+      navigate("/app", { replace: true });
     } catch (err: any) {
       toast.error(err.message || "Failed to accept invitation");
     } finally {
@@ -40,7 +45,8 @@ export default function Onboarding() {
     setAcceptingManual(true);
     try {
       await api.acceptInvitation(manualToken.trim());
-      window.location.href = "/app";
+      await refresh();
+      navigate("/app", { replace: true });
     } catch (err: any) {
       toast.error(err.message || "Invalid or expired token");
     } finally {
@@ -54,7 +60,8 @@ export default function Onboarding() {
     setCreatingOrg(true);
     try {
       await api.createTenant(orgName.trim());
-      window.location.href = "/app";
+      await refresh();
+      navigate("/app", { replace: true });
     } catch (err: any) {
       toast.error(err.message || "Failed to create organization");
     } finally {

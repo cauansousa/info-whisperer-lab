@@ -49,6 +49,18 @@ export default function LibraryDetail() {
   // Integration state
   const [connectingDrive, setConnectingDrive] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const oauthBcRef = useRef<{ bc: BroadcastChannel; timeout: ReturnType<typeof setTimeout> } | null>(null);
+
+  // Cleanup OAuth BroadcastChannel on unmount
+  useEffect(() => {
+    return () => {
+      if (oauthBcRef.current) {
+        oauthBcRef.current.bc.close();
+        clearTimeout(oauthBcRef.current.timeout);
+        oauthBcRef.current = null;
+      }
+    };
+  }, []);
 
   // Folder picker state
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -158,13 +170,16 @@ export default function LibraryDetail() {
       const bc = new BroadcastChannel("oauth_drive");
       const timeout = setTimeout(() => {
         bc.close();
+        oauthBcRef.current = null;
         setConnectingDrive(false);
       }, 5 * 60 * 1000);
+      oauthBcRef.current = { bc, timeout };
 
       bc.onmessage = async (event) => {
         if (event.data?.type !== "oauth_drive_connected") return;
         bc.close();
         clearTimeout(timeout);
+        oauthBcRef.current = null;
         setConnectingDrive(false);
         if (event.data.error) {
           toast.error(`OAuth error: ${event.data.error}`);

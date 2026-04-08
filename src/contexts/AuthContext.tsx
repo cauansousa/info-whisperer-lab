@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const me = await api.getMe();
       setState({ session, me, loading: false, noTenant: false });
     } catch (err: any) {
-      if (err?.message?.includes("403") || err?.message?.includes("Forbidden")) {
+      if (err?.status === 403 || err?.response?.status === 403) {
         setState({ session, me: null, loading: false, noTenant: true });
       } else {
         setState({ session, me: null, loading: false, noTenant: false });

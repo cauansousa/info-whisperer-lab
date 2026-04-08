@@ -90,7 +90,19 @@ export default function UserAgents() {
     setOpen(true);
   };
 
-  const openNew = () => { setEditId(null); setForm({ ...defaultForm }); setOpen(true); };
+  const openNew = () => {
+    setEditId(null);
+    setForm({ ...defaultForm });
+    setOpen(true);
+  };
+
+  const handleDialogClose = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setEditId(null);
+      setForm({ ...defaultForm });
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,7 +220,7 @@ export default function UserAgents() {
         </div>
       )}
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleDialogClose}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>{editId ? "Editar Agente" : "Novo Agente"}</DialogTitle>

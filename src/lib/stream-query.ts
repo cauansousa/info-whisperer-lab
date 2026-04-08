@@ -1,8 +1,11 @@
 import { authSupabase } from "@/lib/auth-client";
+import { getApiBase } from "@/lib/config";
 import type { QueryRequest, SourceItem } from "@/types";
 import type { OllamaMessage } from "@/lib/local-llm";
 
-const MODEL_BASE = "https://api.knowledge.cauansousa.com/model";
+function getModelBase(): string {
+  return `${getApiBase()}/model`;
+}
 
 async function getToken(): Promise<string> {
   const { data } = await authSupabase.auth.getSession();
@@ -34,7 +37,7 @@ export async function streamQuery(
 ) {
   const token = await getToken();
 
-  const res = await fetch(`${MODEL_BASE}/query`, {
+  const res = await fetch(`${getModelBase()}/query`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -171,6 +174,8 @@ export async function streamQuery(
   } catch (err: any) {
     if (err.name === "AbortError") return;
     callbacks.onError(err.message || "Stream error");
+  } finally {
+    try { reader.cancel(); } catch { /* ignore */ }
   }
 }
 
@@ -197,13 +202,14 @@ export async function prepareContext(params: {
 }): Promise<PrepareContextResult> {
   const token = await getToken();
 
-  const res = await fetch(`${MODEL_BASE}/prepare_context`, {
+  const res = await fetch(`${getModelBase()}/prepare_context`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(params),
+    signal: AbortSignal.timeout(30000),
   });
 
   if (res.status === 401) {
@@ -231,7 +237,7 @@ export async function persistLocalResponse(
 ): Promise<void> {
   const token = await getToken();
 
-  await fetch(`${MODEL_BASE}/chats/${chat_id}/persist_local`, {
+  await fetch(`${getModelBase()}/chats/${chat_id}/persist_local`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,

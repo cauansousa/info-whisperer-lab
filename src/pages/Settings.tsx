@@ -41,8 +41,8 @@ export default function Settings() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [checkingOllama, setCheckingOllama] = useState(false);
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
-  const [useLocal, setUseLocal] = useState(isUsingLocalOllama);
-  const [localModel, setLocalModel] = useState(getLocalOllamaModel);
+  const [useLocal, setUseLocal] = useState(isUsingLocalOllama());
+  const [localModel, setLocalModel] = useState(getLocalOllamaModel());
   const isTauri = isRunningInTauri();
 
   const { plan, subscribed, isTrialing, daysLeft, subscriptionEnd, loading: planLoading, refresh: refreshPlan } = usePlan();

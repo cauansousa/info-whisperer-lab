@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { authSupabase } from "@/lib/auth-client";
 import { Brain, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 
 export default function Login() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const redirect = searchParams.get("redirect") || "/app";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,8 +21,7 @@ export default function Login() {
     try {
       const { error: authError } = await authSupabase.auth.signInWithPassword({ email, password });
       if (authError) throw authError;
-      // Hard navigation to ensure cookies are sent
-      window.location.href = redirect;
+      navigate(redirect, { replace: true });
     } catch (err: any) {
       setError(err.message || "Invalid credentials");
     } finally {

@@ -63,7 +63,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
       .catch(() => toast.error("Failed to load agents"));
     api.getChats()
       .then(setChats)
-      .catch(() => {})
+      .catch(() => toast.error("Failed to load chat history"))
       .finally(() => setLoadingChats(false));
 
     // Desktop: auto-detect Ollama model on startup if none saved yet
@@ -72,7 +72,9 @@ export default function ChatView({ chatId }: ChatViewProps) {
         .then((models) => {
           if (models.length > 0) setLocalOllamaModel(models[0]);
         })
-        .catch(() => {});
+        .catch(() => {
+          console.warn("[KnowledgeAI] Ollama auto-detect failed — Ollama may not be running");
+        });
     }
   }, []);
 
@@ -91,6 +93,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
         const status = err?.status ?? err?.response?.status;
         if (status === 404) {
           // Chat was deleted — remove from list and go to new chat
+          toast.info("Este chat foi eliminado");
           setChats((prev) => prev.filter((c) => c.id !== chatId));
           navigate("/app", { replace: true });
         } else {
@@ -274,6 +277,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
       },
       {
         onToken: (token) => {
+          if (!isMountedRef.current) return;
           streamContentRef.current += token;
           const currentContent = streamContentRef.current;
           setMessages((prev) =>
@@ -283,6 +287,7 @@ export default function ChatView({ chatId }: ChatViewProps) {
           );
         },
         onChatId: (id) => {
+          if (!isMountedRef.current) return;
           receivedChatId = id;
           if (!chatId) {
             navigate(`/app/chat/${id}`, { replace: true });
@@ -290,11 +295,13 @@ export default function ChatView({ chatId }: ChatViewProps) {
           }
         },
         onSources: (srcs) => {
+          if (!isMountedRef.current) return;
           if (srcs?.length) {
             setSources((prev) => ({ ...prev, [agentMsgId]: srcs }));
           }
         },
         onDone: () => {
+          if (!isMountedRef.current) return;
           setSending(false);
           abortRef.current = null;
           // Auto-open canvas if response contains structured content

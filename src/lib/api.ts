@@ -35,6 +35,7 @@ class ApiError extends Error {
 async function apiFetch<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
   const res = await fetch(`${baseUrl}${path}`, {
+    signal: AbortSignal.timeout(30000),
     ...options,
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -56,6 +57,7 @@ async function apiFetch<T>(baseUrl: string, path: string, options: RequestInit =
 async function apiFetchVoid(baseUrl: string, path: string, options: RequestInit = {}): Promise<void> {
   const token = await getToken();
   const res = await fetch(`${baseUrl}${path}`, {
+    signal: AbortSignal.timeout(30000),
     ...options,
     headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", ...options.headers },
   });
@@ -69,6 +71,7 @@ async function apiFetchVoid(baseUrl: string, path: string, options: RequestInit 
 async function apiFetchNoContentType<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
   const res = await fetch(`${baseUrl}${path}`, {
+    signal: AbortSignal.timeout(30000),
     ...options,
     headers: {
       "Authorization": `Bearer ${token}`,

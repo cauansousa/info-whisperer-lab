@@ -9,4 +9,23 @@ Sentry.init({
   environment: import.meta.env.MODE,
 });
 
-createRoot(document.getElementById("root")!).render(<App />);
+function ErrorFallback({ error }: { error: Error }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+      <p className="text-sm font-medium text-destructive">Algo correu mal</p>
+      <p className="text-xs text-muted-foreground">{error?.message}</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="rounded-md border px-4 py-2 text-sm hover:bg-secondary/50"
+      >
+        Recarregar
+      </button>
+    </div>
+  );
+}
+
+createRoot(document.getElementById("root")!).render(
+  <Sentry.ErrorBoundary fallback={({ error }) => <ErrorFallback error={error as Error} />}>
+    <App />
+  </Sentry.ErrorBoundary>
+);
