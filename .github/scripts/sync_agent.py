@@ -23,8 +23,10 @@ TARGET_BRANCH = "local-deploy" if SOURCE_BRANCH == "main" else "main"
 
 
 def run(cmd):
+    """Run a shell command and return (stdout+stderr combined, returncode)."""
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    return result.stdout.strip(), result.returncode
+    combined = (result.stdout + result.stderr).strip()
+    return combined, result.returncode
 
 
 def get_commit_diff():
@@ -44,7 +46,7 @@ def load_repo_context():
     return ""
 
 
-def analyze_with_claude(diff, changed_files, commit_message):
+def analyze_with_claude(diff, changed_files, commit_message, extra_instruction=""):
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     repo_context = load_repo_context()
 
@@ -70,6 +72,8 @@ def analyze_with_claude(diff, changed_files, commit_message):
 ```diff
 {diff}
 ```
+
+{extra_instruction}
 
 ## Task
 Decide if this commit should be replicated to `{TARGET_BRANCH}`.
@@ -131,12 +135,23 @@ def create_pr(new_branch, pr_title, pr_body):
         pr_url = response.json()["html_url"]
         print(f"PR created: {pr_url}")
         return pr_url
+    elif response.status_code == 422:
+        # PR already exists or no commits to sync
+        err = response.json()
+        print(f"PR not created (already exists or no diff): {err.get('message', '')}")
+        return None
     else:
         print(f"Failed to create PR: {response.status_code} {response.text}")
         return None
 
 
 def handle_replicate(pr_title, pr_body):
+    """
+    Returns:
+        True  — sync succeeded (PR created or changes already present)
+        False — unrecoverable error (push failed, etc.)
+        None  — cherry-pick had conflicts; caller should try adapt mode
+    """
     short_sha = COMMIT_SHA[:7]
     new_branch = f"sync/{SOURCE_BRANCH}-to-{TARGET_BRANCH}/{short_sha}"
 
@@ -145,14 +160,17 @@ def handle_replicate(pr_title, pr_body):
 
     out, code = run(f"git cherry-pick {COMMIT_SHA}")
     if code != 0:
-        # Empty cherry-pick means changes already exist in target — not a real failure
+        # Already merged / empty cherry-pick
         if "nothing to commit" in out or "empty" in out.lower():
             print("Changes already present in target branch, nothing to sync.")
             run("git cherry-pick --skip")
             return True
-        print(f"Cherry-pick failed, aborting: {out}")
+
+        # Conflict — abort cleanly and signal caller to try adapt mode
+        print(f"Cherry-pick conflict detected. Aborting and falling back to adapt mode.")
+        print(f"Git output: {out[:500]}")
         run("git cherry-pick --abort")
-        return False
+        return None  # Signal: retry with adapt
 
     _, push_code = run(f"git push origin {new_branch}")
     if push_code != 0:
@@ -167,6 +185,8 @@ def handle_adapt(adapted_files, pr_title, pr_body):
     short_sha = COMMIT_SHA[:7]
     new_branch = f"sync/{SOURCE_BRANCH}-to-{TARGET_BRANCH}/{short_sha}"
 
+    # Branch may already exist from a failed replicate attempt — delete and recreate
+    run(f"git branch -D {new_branch} 2>/dev/null || true")
     run(f"git fetch origin {TARGET_BRANCH}")
     run(f"git checkout -b {new_branch} origin/{TARGET_BRANCH}")
 
@@ -175,6 +195,12 @@ def handle_adapt(adapted_files, pr_title, pr_body):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(file_info["content"])
         run(f"git add {file_info['path']}")
+
+    # Check if there is actually anything to commit
+    status_out, _ = run("git status --porcelain")
+    if not status_out:
+        print("Adapted files match target branch exactly — nothing to commit.")
+        return True
 
     short_msg = COMMIT_MESSAGE.split("\n")[0][:72]
     commit_msg = f"sync: {short_msg}\n\nAdapted from `{SOURCE_BRANCH}` commit {COMMIT_SHA[:7]}."
@@ -227,18 +253,61 @@ def main():
         f"Synced from `{SOURCE_BRANCH}` commit {COMMIT_SHA[:7]}.\n\n**Rationale:** {rationale}"
     )
 
+    success = False
+
     if action == "replicate":
-        success = handle_replicate(pr_title, pr_body)
+        result = handle_replicate(pr_title, pr_body)
+
+        if result is None:
+            # Cherry-pick had conflicts — ask Claude to produce adapted content
+            print("Cherry-pick failed. Asking Claude to produce adapted content...")
+            try:
+                adapt_decision = analyze_with_claude(
+                    diff,
+                    changed_files,
+                    COMMIT_MESSAGE,
+                    extra_instruction=(
+                        "IMPORTANT: Cherry-pick of this commit failed due to conflicts "
+                        f"with `{TARGET_BRANCH}`. You MUST respond with action='adapt' "
+                        "and provide `adapted_files` with the complete file content as "
+                        f"it should look in `{TARGET_BRANCH}` after applying this change."
+                    ),
+                )
+                adapt_action = adapt_decision.get("action", "ignore")
+                adapted_files = adapt_decision.get("adapted_files") or []
+
+                if adapt_action == "ignore":
+                    print("Claude decided to ignore after conflict — skipping.")
+                    success = True  # Not a failure, just nothing to sync
+                elif adapted_files:
+                    print(f"Applying adapted content for {len(adapted_files)} file(s)...")
+                    success = handle_adapt(adapted_files, pr_title, pr_body)
+                    if not success:
+                        # Don't fail the workflow — sync just couldn't be done automatically
+                        print("Adapt also failed. Skipping — manual sync may be needed.")
+                        success = True
+                else:
+                    print("Claude returned no adapted_files. Skipping.")
+                    success = True  # Not a failure
+
+            except Exception as e:
+                print(f"Adapt fallback error: {e}. Skipping.")
+                success = True  # Don't fail the workflow over this
+
+        else:
+            success = result if result is not None else True
+
     elif action == "adapt":
         adapted_files = decision.get("adapted_files") or []
         if not adapted_files:
             print("No adapted_files provided by Claude, falling back to replicate.")
-            success = handle_replicate(pr_title, pr_body)
+            result = handle_replicate(pr_title, pr_body)
+            success = True if result is None else bool(result)
         else:
             success = handle_adapt(adapted_files, pr_title, pr_body)
     else:
         print(f"Unknown action: {action}")
-        return
+        success = True
 
     sys.exit(0 if success else 1)
 
