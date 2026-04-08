@@ -14,6 +14,17 @@ const tiers = [
 ];
 
 export default function PricingSection() {
+  const { session } = useAuth();
+  const navigate = useNavigate();
+
+  function handlePlanClick(planKey: string) {
+    if (session) {
+      navigate(`/app/settings?tab=billing&plan=${planKey}`);
+    } else {
+      navigate(`/signup?plan=${planKey}`);
+    }
+  }
+
   return (
     <section id="pricing" className="py-24 px-4">
       <div className="max-w-6xl mx-auto">
