@@ -20,6 +20,7 @@ const mainItems = [
   { title: "Chat", url: "/app", icon: MessageSquare, minRole: "member" as const },
   { title: "My Libraries", url: "/app/libraries", icon: BookOpen, minRole: "member" as const },
   { title: "My Agents", url: "/app/agents", icon: Bot, minRole: "member" as const },
+  { title: "Billing", url: "/app/settings?tab=billing", icon: CreditCard, minRole: "member" as const },
   ...(isRunningInTauri()
     ? [{ title: "Settings", url: "/app/settings", icon: SlidersHorizontal, minRole: "member" as const }]
     : []),
