@@ -1,4 +1,4 @@
-import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings, UserPlus, SlidersHorizontal } from "lucide-react";
+import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings, UserPlus, SlidersHorizontal, CreditCard } from "lucide-react";
 import { isRunningInTauri } from "@/lib/config";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -20,6 +20,7 @@ const mainItems = [
   { title: "Chat", url: "/app", icon: MessageSquare, minRole: "member" as const },
   { title: "My Libraries", url: "/app/libraries", icon: BookOpen, minRole: "member" as const },
   { title: "My Agents", url: "/app/agents", icon: Bot, minRole: "member" as const },
+  { title: "Billing", url: "/app/settings?tab=billing", icon: CreditCard, minRole: "member" as const },
   ...(isRunningInTauri()
     ? [{ title: "Settings", url: "/app/settings", icon: SlidersHorizontal, minRole: "member" as const }]
     : []),
@@ -44,6 +45,7 @@ export function DashboardSidebar() {
 
   const isActive = (path: string) => {
     if (path === "/app") return location.pathname === "/app" || location.pathname.startsWith("/app/chat");
+    if (path.includes("?tab=billing")) return location.pathname === "/app/settings" && location.search.includes("tab=billing");
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
