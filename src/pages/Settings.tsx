@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowDownToLine, RefreshCw, CreditCard, Sparkles, ExternalLink } from "lucide-react";
+import { ArrowDownToLine, RefreshCw, CreditCard, Sparkles, ExternalLink, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getApiBase, setApiBase, resetApiBase, getDefaultApiBase, isRunningInTauri } from "@/lib/config";
@@ -322,10 +322,11 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-6">
+          {/* Current Plan Card */}
           <Card>
             <CardHeader>
               <CardTitle>Plano Atual</CardTitle>
-              <CardDescription>Gerencie sua assinatura e métodos de pagamento.</CardDescription>
+              <CardDescription>Informações da sua assinatura ativa.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {planLoading ? (
@@ -343,67 +344,169 @@ export default function Settings() {
                         Trial — {daysLeft} dia{daysLeft !== 1 ? "s" : ""} restante{daysLeft !== 1 ? "s" : ""}
                       </Badge>
                     )}
+                    {!isTrialing && (
+                      <Badge className="bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] border-[hsl(var(--success))]/30">
+                        Ativo
+                      </Badge>
+                    )}
                   </div>
-                  {subscriptionEnd && (
-                    <p className="text-sm text-muted-foreground">
-                      Próxima cobrança: {new Date(subscriptionEnd).toLocaleDateString("pt-BR")}
-                    </p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={handlePortal} disabled={portalLoading} className="gap-1.5">
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      {portalLoading ? "Abrindo…" : "Gerenciar assinatura"}
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={refreshPlan} className="gap-1.5">
-                      <RefreshCw className="h-3.5 w-3.5" /> Atualizar status
-                    </Button>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Valor</p>
+                      <p className="text-sm font-medium">{currentTier.price}{currentTier.period}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Integrações</p>
+                      <p className="text-sm font-medium">
+                        {currentTier.limits.integrations === Infinity ? "Ilimitadas" : `Até ${currentTier.limits.integrations}`}
+                      </p>
+                    </div>
+                    {subscriptionEnd && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Próxima cobrança</p>
+                        <p className="text-sm font-medium">{new Date(subscriptionEnd).toLocaleDateString("pt-BR")}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs text-muted-foreground">Setup</p>
+                      <p className="text-sm font-medium">{currentTier.setup}</p>
+                    </div>
                   </div>
+
+                  <ul className="space-y-1.5 pt-2">
+                    {currentTier.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Check className="h-3.5 w-3.5 text-[hsl(var(--success))] shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Você ainda não possui um plano ativo. Escolha um plano para começar.
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <Card className="border-border/40">
-                      <CardContent className="pt-4 space-y-2">
-                        <p className="font-semibold">Starter</p>
-                        <p className="text-2xl font-bold">R$1.500<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                        <p className="text-xs text-muted-foreground">Até 50 funcionários</p>
-                        <Button variant="outline" onClick={() => handleCheckout(STRIPE_TIERS.starter.price_id)} disabled={checkoutLoading} className="w-full gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5" />
-                          {checkoutLoading ? "Abrindo…" : "Começar trial grátis"}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    <Card className="border-border/40">
-                      <CardContent className="pt-4 space-y-2">
-                        <p className="font-semibold">Growth</p>
-                        <p className="text-2xl font-bold">R$4.500<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                        <p className="text-xs text-muted-foreground">200–500 funcionários</p>
-                        <Button onClick={() => handleCheckout(STRIPE_TIERS.growth.price_id)} disabled={checkoutLoading} className="w-full gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5" />
-                          {checkoutLoading ? "Abrindo…" : "Começar trial grátis"}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    <Card className="border-primary/40">
-                      <CardContent className="pt-4 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold">Business</p>
-                          <Badge variant="outline" className="text-xs">Recomendado</Badge>
-                        </div>
-                        <p className="text-2xl font-bold">R$11.000<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
-                        <p className="text-xs text-muted-foreground">500–1.500 funcionários</p>
-                        <Button variant="default" onClick={() => handleCheckout(STRIPE_TIERS.business.price_id)} disabled={checkoutLoading} className="w-full gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5" />
-                          {checkoutLoading ? "Abrindo…" : "Começar trial grátis"}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
+                <div className="flex items-center gap-3 py-2">
+                  <Badge variant="secondary" className="text-sm px-3 py-1">Sem plano</Badge>
+                  <p className="text-sm text-muted-foreground">Escolha um plano abaixo para começar.</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Management Actions */}
+          {subscribed && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Gerenciamento</CardTitle>
+                <CardDescription>Gerencie pagamentos, faturas e métodos de cobrança.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={handlePortal} disabled={portalLoading} className="gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5" />
+                    {portalLoading ? "Abrindo…" : "Métodos de pagamento"}
+                  </Button>
+                  <Button variant="outline" onClick={handlePortal} disabled={portalLoading} className="gap-1.5">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {portalLoading ? "Abrindo…" : "Histórico de faturas"}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={refreshPlan} className="gap-1.5">
+                    <RefreshCw className="h-3.5 w-3.5" /> Atualizar status
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Ao clicar, você será redirecionado para o portal seguro de cobrança.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Plan Comparison / Upgrade */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{subscribed ? "Alterar plano" : "Escolha um plano"}</CardTitle>
+              <CardDescription>
+                {subscribed
+                  ? "Compare os planos e faça upgrade ou downgrade."
+                  : "Comece com 14 dias grátis. Sem compromisso."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {(["starter", "growth", "business"] as const).map((key) => {
+                  const tier = STRIPE_TIERS[key];
+                  const isCurrent = plan === key;
+                  const isRecommended = key === "business";
+                  return (
+                    <Card
+                      key={key}
+                      className={`relative border transition-all ${
+                        isCurrent
+                          ? "border-primary/60 bg-primary/5"
+                          : isRecommended
+                          ? "border-primary/30"
+                          : "border-border/40"
+                      }`}
+                    >
+                      {isCurrent && (
+                        <div className="absolute -top-2.5 left-3">
+                          <Badge className="bg-primary text-primary-foreground text-xs">Plano atual</Badge>
+                        </div>
+                      )}
+                      {!isCurrent && isRecommended && (
+                        <div className="absolute -top-2.5 left-3">
+                          <Badge variant="outline" className="text-xs border-primary/30">Recomendado</Badge>
+                        </div>
+                      )}
+                      <CardContent className="pt-5 space-y-3">
+                        <p className="font-semibold">{tier.name}</p>
+                        <p className="text-2xl font-bold">
+                          {tier.price}
+                          <span className="text-sm font-normal text-muted-foreground">{tier.period}</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{tier.description}</p>
+                        <ul className="space-y-1.5 text-xs">
+                          {tier.features.map((f) => (
+                            <li key={f} className="flex items-center gap-1.5 text-muted-foreground">
+                              <Check className="h-3 w-3 text-[hsl(var(--success))] shrink-0" />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        {isCurrent ? (
+                          <Button variant="outline" className="w-full" disabled>
+                            Plano atual
+                          </Button>
+                        ) : (
+                          <Button
+                            variant={isRecommended ? "default" : "outline"}
+                            className="w-full gap-1.5"
+                            onClick={() => handleCheckout(tier.price_id)}
+                            disabled={checkoutLoading}
+                          >
+                            <Sparkles className="h-3.5 w-3.5" />
+                            {checkoutLoading
+                              ? "Abrindo…"
+                              : subscribed
+                              ? "Mudar para este plano"
+                              : "Começar trial grátis"}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* Enterprise CTA */}
+              <div className="mt-4 p-4 rounded-lg border border-border/40 bg-muted/30 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-sm">Enterprise</p>
+                  <p className="text-xs text-muted-foreground">1.500+ funcionários ou regulados — sob medida</p>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/#cta">Falar com vendas</a>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
