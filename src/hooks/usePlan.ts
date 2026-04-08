@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { authSupabase } from "@/lib/auth-client";
 import type { PlanTier } from "@/lib/stripe-config";
 
@@ -31,7 +32,7 @@ export function usePlan() {
         return;
       }
 
-      const { data, error } = await authSupabase.functions.invoke("check-subscription", {
+      const { data, error } = await supabase.functions.invoke("check-subscription", {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 

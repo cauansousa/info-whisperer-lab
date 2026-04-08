@@ -22,6 +22,7 @@ import {
 import { usePlan } from "@/hooks/usePlan";
 import { STRIPE_TIERS } from "@/lib/stripe-config";
 import { authSupabase } from "@/lib/auth-client";
+import { supabase } from "@/integrations/supabase/client";
 
 const CURRENT_VERSION = "0.1.5";
 const GITHUB_REPO = "cauansousa/info-whisperer-lab";
@@ -157,7 +158,7 @@ export default function Settings() {
     try {
       const { data: { session } } = await authSupabase.auth.getSession();
       if (!session) throw new Error("Não autenticado");
-      const { data, error } = await authSupabase.functions.invoke("create-checkout", {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { priceId },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -175,7 +176,7 @@ export default function Settings() {
     try {
       const { data: { session } } = await authSupabase.auth.getSession();
       if (!session) throw new Error("Não autenticado");
-      const { data, error } = await authSupabase.functions.invoke("customer-portal", {
+      const { data, error } = await supabase.functions.invoke("customer-portal", {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;

@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,16 +12,19 @@ const TIERS: Record<string, string> = {
   "prod_UIH5DZxZheZ24U": "business",
 };
 
+function getEmailFromJwt(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.email || null;
+  } catch {
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
-  );
 
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -32,13 +34,11 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Auth error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated");
+    const email = getEmailFromJwt(token);
+    if (!email) throw new Error("Could not extract email from token");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email, limit: 1 });
 
     if (customers.data.length === 0) {
       return new Response(JSON.stringify({ subscribed: false, plan: null, subscription_end: null }), {
@@ -49,7 +49,6 @@ serve(async (req) => {
 
     const customerId = customers.data[0].id;
 
-    // Check active or trialing subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "all",
