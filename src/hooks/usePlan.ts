@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { authSupabase } from "@/lib/auth-client";
+import { invokeEdgeFunction } from "@/lib/edge-functions";
 import type { PlanTier } from "@/lib/stripe-config";
 
 interface PlanState {
@@ -32,8 +32,8 @@ export function usePlan() {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("check-subscription", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+      const { data, error } = await invokeEdgeFunction("check-subscription", {
+        token: session.access_token,
       });
 
       if (error) throw error;
