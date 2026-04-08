@@ -350,11 +350,23 @@ export default function Settings() {
                   <p className="text-sm text-muted-foreground">
                     Você ainda não possui um plano ativo. Escolha um plano para começar.
                   </p>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <Card className="border-border/40">
+                      <CardContent className="pt-4 space-y-2">
+                        <p className="font-semibold">Starter</p>
+                        <p className="text-2xl font-bold">R$1.500<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                        <p className="text-xs text-muted-foreground">Até 50 funcionários</p>
+                        <Button variant="outline" onClick={() => handleCheckout(STRIPE_TIERS.starter.price_id)} disabled={checkoutLoading} className="w-full gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5" />
+                          {checkoutLoading ? "Abrindo…" : "Começar trial grátis"}
+                        </Button>
+                      </CardContent>
+                    </Card>
                     <Card className="border-border/40">
                       <CardContent className="pt-4 space-y-2">
                         <p className="font-semibold">Growth</p>
                         <p className="text-2xl font-bold">R$4.500<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                        <p className="text-xs text-muted-foreground">200–500 funcionários</p>
                         <Button onClick={() => handleCheckout(STRIPE_TIERS.growth.price_id)} disabled={checkoutLoading} className="w-full gap-1.5">
                           <Sparkles className="h-3.5 w-3.5" />
                           {checkoutLoading ? "Abrindo…" : "Começar trial grátis"}
@@ -368,6 +380,7 @@ export default function Settings() {
                           <Badge variant="outline" className="text-xs">Recomendado</Badge>
                         </div>
                         <p className="text-2xl font-bold">R$11.000<span className="text-sm font-normal text-muted-foreground">/mês</span></p>
+                        <p className="text-xs text-muted-foreground">500–1.500 funcionários</p>
                         <Button variant="default" onClick={() => handleCheckout(STRIPE_TIERS.business.price_id)} disabled={checkoutLoading} className="w-full gap-1.5">
                           <Sparkles className="h-3.5 w-3.5" />
                           {checkoutLoading ? "Abrindo…" : "Começar trial grátis"}
