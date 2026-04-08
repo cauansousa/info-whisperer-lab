@@ -1,4 +1,24 @@
 export const STRIPE_TIERS = {
+  starter: {
+    product_id: "prod_UIaJuMrsWHtEyu",
+    price_id: "price_1TJz8YBWoQdiVFZvQdfIwTvW",
+    name: "Starter",
+    price: "R$1.500",
+    priceValue: 1500,
+    period: "/mês",
+    description: "Para empresas de até 50 funcionários",
+    setup: "Grátis",
+    features: [
+      "Até 3 integrações",
+      "Agentes ilimitados",
+      "LLM BYOK",
+      "Setup grátis",
+      "Onboarding self-service",
+    ],
+    limits: {
+      integrations: 3,
+    },
+  },
   growth: {
     product_id: "prod_UIH5DvfQqPkCqj",
     price_id: "price_1TJgWwBWoQdiVFZvvSu4wkDB",

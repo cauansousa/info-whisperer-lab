@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 const TIERS: Record<string, string> = {
+  "prod_UIaJuMrsWHtEyu": "starter",
   "prod_UIH5DvfQqPkCqj": "growth",
   "prod_UIH5DZxZheZ24U": "business",
 };

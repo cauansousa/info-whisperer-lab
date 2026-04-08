@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { STRIPE_TIERS } from "@/lib/stripe-config";
 
 const tiers = [
+  { key: "starter" as const, ...STRIPE_TIERS.starter },
   { key: "growth" as const, ...STRIPE_TIERS.growth },
   { key: "business" as const, ...STRIPE_TIERS.business },
   { key: "enterprise" as const, ...STRIPE_TIERS.enterprise },
@@ -26,7 +27,7 @@ export default function PricingSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {tiers.map((tier) => {
             const isRecommended = "recommended" in tier && tier.recommended;
             return (
