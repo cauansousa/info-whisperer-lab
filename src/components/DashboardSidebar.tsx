@@ -1,4 +1,4 @@
-import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings, UserPlus, SlidersHorizontal } from "lucide-react";
+import { Brain, MessageSquare, Building2, BookOpen, Bot, Users2, Settings, UserPlus, SlidersHorizontal, CreditCard } from "lucide-react";
 import { isRunningInTauri } from "@/lib/config";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
