@@ -22,6 +22,7 @@ import {
 import { usePlan } from "@/hooks/usePlan";
 import { STRIPE_TIERS } from "@/lib/stripe-config";
 import { authSupabase } from "@/lib/auth-client";
+import { supabase } from "@/integrations/supabase/client";
 
 const CURRENT_VERSION = "0.1.5";
 const GITHUB_REPO = "cauansousa/info-whisperer-lab";
