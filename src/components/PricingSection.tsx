@@ -97,9 +97,9 @@ export default function PricingSection() {
                       variant={isRecommended ? "hero" : "hero-outline"}
                       size="lg"
                       className="w-full"
-                      asChild
+                      onClick={() => handlePlanClick(tier.key)}
                     >
-                      <a href="/signup">Começar trial grátis</a>
+                      Começar trial grátis
                     </Button>
                   )}
                 </CardContent>
