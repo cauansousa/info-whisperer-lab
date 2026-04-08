@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { STRIPE_TIERS } from "@/lib/stripe-config";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const tiers = [
   { key: "starter" as const, ...STRIPE_TIERS.starter },
@@ -12,6 +14,17 @@ const tiers = [
 ];
 
 export default function PricingSection() {
+  const { session } = useAuth();
+  const navigate = useNavigate();
+
+  function handlePlanClick(planKey: string) {
+    if (session) {
+      navigate(`/app/settings?tab=billing&plan=${planKey}`);
+    } else {
+      navigate(`/signup?plan=${planKey}`);
+    }
+  }
+
   return (
     <section id="pricing" className="py-24 px-4">
       <div className="max-w-6xl mx-auto">
@@ -84,9 +97,9 @@ export default function PricingSection() {
                       variant={isRecommended ? "hero" : "hero-outline"}
                       size="lg"
                       className="w-full"
-                      asChild
+                      onClick={() => handlePlanClick(tier.key)}
                     >
-                      <a href="/signup">Começar trial grátis</a>
+                      Começar trial grátis
                     </Button>
                   )}
                 </CardContent>

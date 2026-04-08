@@ -50,6 +50,19 @@ export default function Settings() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
 
+  // Auto-open checkout if ?plan= is set and user has no subscription
+  useEffect(() => {
+    if (planLoading) return;
+    const planParam = searchParams.get("plan");
+    if (planParam && !subscribed) {
+      const tier = STRIPE_TIERS[planParam as keyof typeof STRIPE_TIERS];
+      if (tier && tier.price_id) {
+        handleCheckout(tier.price_id);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planLoading, subscribed]);
+
   async function refreshOllama() {
     if (!isTauri) return;
     setCheckingOllama(true);
