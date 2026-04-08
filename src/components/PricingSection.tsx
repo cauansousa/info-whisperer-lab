@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { STRIPE_TIERS } from "@/lib/stripe-config";
 
 const tiers = [
+  { key: "starter" as const, ...STRIPE_TIERS.starter },
   { key: "growth" as const, ...STRIPE_TIERS.growth },
   { key: "business" as const, ...STRIPE_TIERS.business },
   { key: "enterprise" as const, ...STRIPE_TIERS.enterprise },

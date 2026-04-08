@@ -12,7 +12,7 @@ interface PlanGateProps {
   fallback?: ReactNode;
 }
 
-const planOrder: Record<string, number> = { growth: 0, business: 1, enterprise: 2 };
+const planOrder: Record<string, number> = { starter: 0, growth: 1, business: 2, enterprise: 3 };
 
 export default function PlanGate({ minPlan, children, fallback }: PlanGateProps) {
   const { plan, loading } = usePlan();
