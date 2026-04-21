@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { authSupabase } from "@/lib/auth-client";
 import { Brain, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,7 +60,15 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Password</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-muted-foreground">Password</label>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 type="password"
                 value={password}
