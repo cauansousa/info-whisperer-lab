@@ -3,14 +3,7 @@
 import * as React from 'npm:react@18.3.1'
 
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Text,
+  Body, Button, Container, Head, Heading, Html, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
 
 interface MagicLinkEmailProps {
@@ -18,26 +11,25 @@ interface MagicLinkEmailProps {
   confirmationUrl: string
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
+  <Html lang="pt-BR" dir="ltr">
     <Head />
-    <Preview>Your login link for {siteName}</Preview>
+    <Preview>Seu link de acesso ao {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
+        <Section style={brandSection}><Text style={brand}>{siteName}</Text></Section>
+        <Heading style={h1}>Seu link de acesso</Heading>
         <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
+          Clique no botão abaixo para entrar no <strong>{siteName}</strong>.
+          Este link é válido por tempo limitado.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Log In
-        </Button>
-        <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
+        <Section style={btnWrap}>
+          <Button style={button} href={confirmationUrl}>Entrar</Button>
+        </Section>
+        <Text style={smallText}>
+          Se você não solicitou este link, pode ignorar este e-mail com segurança.
         </Text>
+        <Text style={footer}>© {new Date().getFullYear()} {siteName}. Todos os direitos reservados.</Text>
       </Container>
     </Body>
   </Html>
@@ -45,26 +37,13 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }
+const container = { padding: '32px 28px', maxWidth: '560px' }
+const brandSection = { borderBottom: '1px solid #e5e5e5', paddingBottom: '16px', marginBottom: '32px' }
+const brand = { fontSize: '16px', fontWeight: 600, color: '#0a0a0a', margin: 0, letterSpacing: '-0.01em' }
+const h1 = { fontSize: '24px', fontWeight: 600, color: '#0a0a0a', margin: '0 0 16px', letterSpacing: '-0.02em' }
+const text = { fontSize: '15px', color: '#404040', lineHeight: '1.6', margin: '0 0 20px' }
+const smallText = { fontSize: '13px', color: '#737373', lineHeight: '1.6', margin: '24px 0 0' }
+const btnWrap = { textAlign: 'center' as const, margin: '32px 0' }
+const button = { backgroundColor: '#0a0a0a', color: '#ffffff', fontSize: '14px', fontWeight: 500, borderRadius: '8px', padding: '12px 24px', textDecoration: 'none', display: 'inline-block' }
+const footer = { fontSize: '12px', color: '#a3a3a3', margin: '40px 0 0', borderTop: '1px solid #e5e5e5', paddingTop: '20px' }
