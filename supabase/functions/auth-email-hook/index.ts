@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "info-whisperer-lab"
+const SITE_NAME = "KnowledgeAI"
 const SENDER_DOMAIN = "notify.utopiaco.com.br"
 const ROOT_DOMAIN = "utopiaco.com.br"
 const FROM_DOMAIN = "utopiaco.com.br" // Domain shown in From address (may be root or sender subdomain)
